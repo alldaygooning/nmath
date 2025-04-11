@@ -1,13 +1,17 @@
 package nikita.math.construct.expression;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.matheclipse.core.eval.ExprEvaluator;
 
+import nikita.math.NMath;
 import nikita.math.construct.Matrix;
 import nikita.math.construct.Precision;
 import nikita.math.construct.Variable;
+import nikita.math.exception.construct.root.ExpressionSyntaxError;
 
 public class ExpressionSystem {
 
@@ -22,7 +26,11 @@ public class ExpressionSystem {
 	public Matrix jacobiMatrix() {
 		ExprEvaluator evaluator = new ExprEvaluator();
 		String command = String.format("JacobiMatrix({%s, %s}, {x, y})", a, b);
-		return new Matrix(evaluator.eval(command));
+		Matrix jacobiMatrix = new Matrix(evaluator.eval(command));
+		if (jacobiMatrix.isBroken()) {
+			throw new ExpressionSyntaxError(Arrays.asList(this.a, this.b));
+		}
+		return jacobiMatrix;
 	}
 
 	public ExpressionSystem evaluateAt(Variable variable) {
@@ -32,8 +40,8 @@ public class ExpressionSystem {
 	}
 
 	public ExpressionSystem evaluateAt(Variable variable, Precision precision) {
-		Expression anew = new Expression(a.evaluateAt(variable, precision).toString());
-		Expression bnew = new Expression(b.evaluateAt(variable, precision).toString());
+		Expression anew = a.evaluateAt(variable, precision);
+		Expression bnew = b.evaluateAt(variable, precision);
 		return new ExpressionSystem(anew, bnew);
 	}
 
@@ -42,5 +50,17 @@ public class ExpressionSystem {
 		expressions.add(a);
 		expressions.add(b);
 		return expressions;
+	}
+
+	public boolean check(Variable xVar, Variable yVar, Precision precision) {
+		BigDecimal aValue = a.evaluateAt(xVar).evaluateAt(yVar).toBigDecimal(precision);
+		BigDecimal bValue = b.evaluateAt(xVar).evaluateAt(yVar).toBigDecimal(precision);
+
+		return NMath.equal(aValue, BigDecimal.ZERO, precision) && NMath.equal(bValue, BigDecimal.ZERO, precision);
+	}
+
+	@Override
+	public String toString() {
+		return String.format("{%s, %s}", a, b);
 	}
 }

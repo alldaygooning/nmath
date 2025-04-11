@@ -17,7 +17,10 @@ import nikita.math.NMath;
 import nikita.math.construct.Interval;
 import nikita.math.construct.Point;
 import nikita.math.construct.Precision;
+import nikita.math.construct.Variable;
 import nikita.math.construct.expression.Expression;
+import nikita.math.exception.construct.expression.ExpressionConversionException;
+import nikita.math.exception.construct.expression.ExpressionSolutionException;
 import nikita.math.exception.construct.root.RootsNumberEstimationException;
 import nikita.math.solver.root.RootFinder;
 
@@ -29,7 +32,7 @@ public abstract class SingleRootFinder extends RootFinder {
 		if (!expression.checkIVT(interval)) {
 			return 0;
 		}
-		
+
 		Expression derivative = expression.derivative("x");
 
 		List<Point> criticalPoints = new ArrayList<Point>();
@@ -44,25 +47,31 @@ public abstract class SingleRootFinder extends RootFinder {
 			}
 		}
 		else {
-			criticalPoints.addAll(getSymjaPoints(derivative, interval, precision));
+			try {
+				criticalPoints.addAll(getSymjaPoints(derivative, interval, precision));
+			} catch (ExpressionSolutionException e) {
+				throw new RootsNumberEstimationException(String.format("Error occured trying to estimate number of %s roots on %s: %s",
+						expression, interval, e.getMessage()));
+			}
 		}
 
 		BigDecimal left = interval.getLeft();
 		BigDecimal right = interval.getRight();
 
-		Point leftEndpoint = new Point(left, NMath.getBigDecimal(expression.evaluateAt(left.toPlainString()), precision));
-		Point rightEndpoint = new Point(right, NMath.getBigDecimal(expression.evaluateAt(right.toPlainString()), precision));
+		Point leftEndpoint = new Point(left, expression.evaluateAt(new Variable("x", left)).toBigDecimal(precision));
+		Point rightEndpoint = new Point(right, expression.evaluateAt(new Variable("x", right)).toBigDecimal(precision));
 
 		List<Point> partitionPoints = new ArrayList<Point>();
 		partitionPoints.add(leftEndpoint);
 		for (Point criticalPoint : criticalPoints) {
 			BigDecimal x = criticalPoint.getX();
-			BigDecimal y = NMath.getBigDecimal(expression.evaluateAt(x.toPlainString()), precision);
+			BigDecimal y = expression.evaluateAt(new Variable("x", x)).toBigDecimal(precision);
 			Point partitionPoint = new Point(x, y);
 			partitionPoints.add(partitionPoint);
 		}
 		partitionPoints.add(rightEndpoint);
 		partitionPoints.sort((p1, p2) -> p1.getX().compareTo(p2.getX()));
+		partitionPoints = uniquePoints(partitionPoints);
 
 		info(String.format("Found partitions: %s", partitionPoints));
 
@@ -99,7 +108,7 @@ public abstract class SingleRootFinder extends RootFinder {
 			List<IExpr> roots = WolframAPI.getRules(wolframRoot);
 			for (IExpr root : roots) {
 				BigDecimal x = NMath.getBigDecimal(root.getAt(2), precision);
-				BigDecimal y = NMath.getBigDecimal(expression.evaluateAt(x.toPlainString()), precision);
+				BigDecimal y = expression.evaluateAt(new Variable("x", x)).toBigDecimal(precision);
 
 				Point point = new Point(x, y);
 				points.add(point);
@@ -112,15 +121,34 @@ public abstract class SingleRootFinder extends RootFinder {
 	private static List<Point> getSymjaPoints(Expression expression, Interval interval, Precision precision) {
 		List<Point> points = new ArrayList<Point>();
 
-		List<BigDecimal> roots = expression.roots("x", precision);
+		try {
+			BigDecimal y = expression.toBigDecimal(precision);
+			points.add(new Point(interval.getLeft(), y));
+			return points;
+		} catch (ExpressionConversionException e) {
+
+		}
+		List<BigDecimal> roots = expression.roots(new Variable("x"), interval, precision);
 		for (BigDecimal x : roots) {
-			BigDecimal y = NMath.getBigDecimal(expression.evaluateAt(x.toPlainString()), precision);
+			BigDecimal y = expression.evaluateAt(new Variable("x", x)).toBigDecimal(precision);
 
 			Point point = new Point(x, y);
 			points.add(point);
 		}
 
 		return points;
+	}
+
+	private static List<Point> uniquePoints(List<Point> points) {
+		List<Point> filteredPoints = new ArrayList<>();
+		Point previousPoint = null;
+		for (Point currentPoint : points) {
+			if (previousPoint == null || currentPoint.getX().compareTo(previousPoint.getX()) != 0) {
+				filteredPoints.add(currentPoint);
+				previousPoint = currentPoint;
+			}
+		}
+		return filteredPoints;
 	}
 
 	private static boolean isZero(BigDecimal number, Precision precision) {
@@ -130,4 +158,5 @@ public abstract class SingleRootFinder extends RootFinder {
 	private static void info(String message) {
 		NLogger.info(String.format("%s: %s", prefix, message));
 	}
+
 }

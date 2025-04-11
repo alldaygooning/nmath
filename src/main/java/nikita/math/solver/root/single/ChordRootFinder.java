@@ -5,9 +5,9 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 import nikita.logging.NLogger;
-import nikita.math.NMath;
 import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
+import nikita.math.construct.Variable;
 import nikita.math.construct.expression.Expression;
 
 public class ChordRootFinder extends SingleRootFinder {
@@ -34,12 +34,12 @@ public class ChordRootFinder extends SingleRootFinder {
 		while (true) {
 			iteration++;
 
-			BigDecimal fx = NMath.getBigDecimal(NMath.replaceAll(expression, x.toPlainString()), adjustedPrecision);
+			BigDecimal fx = expression.evaluateAt(new Variable("x", x)).toBigDecimal(adjustedPrecision);
 			if (fx.abs().compareTo(precision.getAccuracy()) < 0) {
 				break;
 			}
-			BigDecimal fLeft = NMath.getBigDecimal(NMath.replaceAll(expression, left.toPlainString()), adjustedPrecision);
-			BigDecimal fRight = NMath.getBigDecimal(NMath.replaceAll(expression, right.toPlainString()), adjustedPrecision);
+			BigDecimal fLeft = expression.evaluateAt(new Variable("x", left)).toBigDecimal(adjustedPrecision);
+			BigDecimal fRight = expression.evaluateAt(new Variable("x", right)).toBigDecimal(adjustedPrecision);
 
 			BigDecimal oldLeft = left;
 			BigDecimal oldRight = right;
@@ -74,8 +74,8 @@ public class ChordRootFinder extends SingleRootFinder {
 		BigDecimal left = interval.getLeft();
 		BigDecimal right = interval.getRight();
 
-		BigDecimal fLeft = NMath.getBigDecimal(NMath.replaceAll(expression, left.toPlainString()), precision);
-		BigDecimal fRight = NMath.getBigDecimal(NMath.replaceAll(expression, right.toPlainString()), precision);
+		BigDecimal fLeft = expression.evaluateAt(new Variable("x", left)).toBigDecimal(precision);
+		BigDecimal fRight = expression.evaluateAt(new Variable("x", right)).toBigDecimal(precision);
 
 		BigDecimal numerator = (right.subtract(left, mathContext)).multiply(fLeft);
 		BigDecimal denominator = fRight.subtract(fLeft, mathContext);

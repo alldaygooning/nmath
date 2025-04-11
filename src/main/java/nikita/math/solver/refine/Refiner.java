@@ -30,14 +30,15 @@ import nikita.math.construct.extremum.Minimum;
 
 public abstract class Refiner {
 
-	static final int extraPrecision = 5;
+	static final int EXTRA_PRECISION = 5;
 
-	static final BigDecimal minimalStep = BigDecimal.valueOf(0.1d);
-	static final BigDecimal intervalMinLength = BigDecimal.valueOf(0.2d);
+	static final BigDecimal STEP_SIZE_MINIMUM = BigDecimal.valueOf(0.1d);
+	static final BigDecimal INTERVAL_LENGTH_MINIMUM = BigDecimal.valueOf(0.2d);
+	static final BigDecimal INTERVAL_LENGTH_MAXIMUM = BigDecimal.valueOf(9.5f);
 
-	static final int cmaesMaxSteps = 30000;
-	static final int sigmaLength = 1;
-	static final double sigmaMin = 1e-300;
+	static final int CMAES_STEPS_MAX = 30000;
+	static final int SIGMA_LENGTH = 1;
+	static final double SIGMA_VALUE_MINIMUM = 1e-300;
 
 	public static Extremum hipparchusRefine(Expression expression, Interval interval, Precision precision, GoalType goal) {
 		ExprEvaluator evaluator = new ExprEvaluator();
@@ -56,7 +57,7 @@ public abstract class Refiner {
 		double[] upperBound = new double[] { right.doubleValue() };
 		SimpleBounds simpleBounds = new SimpleBounds(lowerBound, upperBound);
 
-		CMAESOptimizer optimizer = new CMAESOptimizer(cmaesMaxSteps, //
+		CMAESOptimizer optimizer = new CMAESOptimizer(CMAES_STEPS_MAX, //
 				0, //
 				true, //
 				10, //
@@ -71,7 +72,7 @@ public abstract class Refiner {
 		IAST variables = F.List(F.symbol("x"));
 
 		PointValuePair optimum = optimizer.optimize( //
-				new MaxEval(cmaesMaxSteps), // maximum evaluations
+				new MaxEval(CMAES_STEPS_MAX), // maximum evaluations
 				new ObjectiveFunction(new MultiVariateNumerical(function, variables)), // our function to minimize
 				goal,
 				new InitialGuess(initialApproximation), //
@@ -82,6 +83,10 @@ public abstract class Refiner {
 		if (optimum != null) {
 			double optimumX = optimum.getPoint()[0];
 			double optimumY = optimum.getValue();
+
+			if (Double.isNaN(optimumX) || Double.isNaN(optimumY)) {
+				return null;
+			}
 
 			BigDecimal x = new BigDecimal(Double.toString(optimumX), mathContext);
 			BigDecimal y = new BigDecimal(Double.toString(optimumY), mathContext);
@@ -98,7 +103,7 @@ public abstract class Refiner {
 	private static double getSigma(BigDecimal intervalLength) {
 		double sigma = intervalLength.doubleValue() / 2f;
 		if (sigma == 0) {
-			sigma = sigmaMin;
+			sigma = SIGMA_VALUE_MINIMUM;
 		}
 		return sigma;
 	}

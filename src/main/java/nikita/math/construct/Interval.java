@@ -14,7 +14,8 @@ public class Interval {
 	public Interval(BigDecimal left, BigDecimal right) {
 		if (left.compareTo(right) >= 0) {
 			throw new IntervalParametersException(
-					String.format("Interval Right endpoint must be greater than Left endpoint %s.", this.toString()));
+					String.format("Interval Right endpoint must be greater than Left endpoint [%s; %s].", left.toPlainString(),
+							right.toPlainString()));
 		}
 		this.left = left;
 		this.right = right;
@@ -34,5 +35,9 @@ public class Interval {
 
 	public BigDecimal getLength() {
 		return left.subtract(right).abs();
+	}
+
+	public boolean contains(Point point) {
+		return ((point.getX().compareTo(left) >= 0) && (point.getX().compareTo(right) <= 0));
 	}
 }

@@ -11,6 +11,10 @@ public class Variable {
 		this.setValue(value);
 	}
 
+	public Variable(String name) {
+		this.setName(name);
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -25,5 +29,14 @@ public class Variable {
 
 	public void setValue(BigDecimal value) {
 		this.value = value;
+	}
+
+	public int compareTo(Variable other) {
+		return this.value.compareTo(other.getValue());
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s = %s", this.name, this.value.toPlainString());
 	}
 }

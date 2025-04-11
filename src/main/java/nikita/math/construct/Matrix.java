@@ -1,6 +1,7 @@
 package nikita.math.construct;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -15,6 +16,8 @@ public class Matrix {
 	int height;
 
 	private static final Precision DEFAULT_PRECISION = new Precision("0.0000001");
+
+	private static final List<String> BROKEN_INDICATORS = Arrays.asList("NonCommutativeMultiply", "Derivative", "Not", "!", "'");
 
 	public Matrix(IExpr matrix) {
 		expressions = new ArrayList<List<Expression>>();
@@ -91,17 +94,26 @@ public class Matrix {
 	}
 
 	public Matrix replaceAll(Variable variable) {
-		return replaceAll(variable, DEFAULT_PRECISION);
+		return evaluateAt(variable, DEFAULT_PRECISION);
 	}
 
-	public Matrix replaceAll(Variable variable, Precision precision) {
+	public Matrix evaluateAt(Variable variable, Precision precision) {
 		Matrix replacedMatrix = new Matrix(this.width, this.height);
 		for (int row = 0; row < this.width; row++) {
 			for (int column = 0; column < this.height; column++) {
-				replacedMatrix.put(row, column, new Expression(this.get(row, column).evaluateAt(variable, precision).toString()));
+				replacedMatrix.put(row, column, this.get(row, column).evaluateAt(variable, precision));
 			}
 		}
 		return replacedMatrix;
+	}
+
+	// ДЕБИЛЬНЫЕ МЕТОДЫ
+
+	public boolean isBroken() {
+		if (this.expressions.stream().anyMatch(expression -> BROKEN_INDICATORS.stream().anyMatch(b -> expression.toString().contains(b)))) {
+			return true;
+		}
+		return false;
 	}
 
 	// СТРОКОВЫЕ МЕТОДЫ!

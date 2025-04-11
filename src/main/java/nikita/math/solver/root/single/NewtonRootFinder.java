@@ -5,10 +5,13 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 import nikita.logging.NLogger;
-import nikita.math.NMath;
 import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
+import nikita.math.construct.Variable;
 import nikita.math.construct.expression.Expression;
+import nikita.math.exception.construct.expression.ExpressionConversionException;
+import nikita.math.exception.construct.expression.ExpressionEvaluationException;
+import nikita.math.exception.construct.root.InitialApproximationException;
 
 public class NewtonRootFinder extends SingleRootFinder {
 
@@ -25,6 +28,10 @@ public class NewtonRootFinder extends SingleRootFinder {
 
 		BigDecimal x = findInitial(expression, interval, precision);
 		info(String.format("Initial approximation x0 = %s", x.toPlainString()));
+		BigDecimal y = expression.evaluateAt(new Variable("x", x)).toBigDecimal(precision);
+		if (y.compareTo(BigDecimal.ZERO) == 0) {
+			return x;
+		}
 
 		Expression derivative = expression.derivative("x");
 
@@ -33,8 +40,14 @@ public class NewtonRootFinder extends SingleRootFinder {
 		while (true) {
 			iteration++;
 
-			BigDecimal fx = NMath.getBigDecimal(NMath.replaceAll(expression, x.toPlainString()), adjustedPrecision);
-			BigDecimal dfx = NMath.getBigDecimal(NMath.replaceAll(derivative, x.toPlainString()), adjustedPrecision);
+			Variable xVar = new Variable("x", x);
+			BigDecimal fx = expression.evaluateAt(xVar).toBigDecimal(adjustedPrecision);
+			BigDecimal dfx;
+			try {
+				dfx = derivative.evaluateAt(xVar).toBigDecimal(adjustedPrecision);
+			} catch (ExpressionConversionException e) {
+				throw new ExpressionEvaluationException(derivative, xVar);
+			}
 
 			BigDecimal fraction = fx.divide(dfx, mathContext);
 			BigDecimal xnew = x.subtract(fraction, mathContext);
@@ -63,12 +76,53 @@ public class NewtonRootFinder extends SingleRootFinder {
 		BigDecimal left = interval.getLeft();
 		BigDecimal right = interval.getRight();
 
-		BigDecimal fLeft = NMath.getBigDecimal(NMath.replaceAll(expression, left.toPlainString()), precision);
-		BigDecimal ddfLeft = NMath.getBigDecimal(NMath.replaceAll(secondDerivative, left.toPlainString()), precision);
-		if (fLeft.multiply(ddfLeft, mathContext).compareTo(BigDecimal.ZERO) > 0) {
+		Variable leftVar = new Variable("x", left);
+		Variable rightVar = new Variable("x", right);
+
+		BigDecimal fLeft = expression.evaluateAt(leftVar).toBigDecimal(precision);
+		BigDecimal fRight = expression.evaluateAt(rightVar).toBigDecimal(precision);
+
+		if (fLeft.compareTo(BigDecimal.ZERO) == 0) {
 			return left;
 		}
-		return right;
+
+		if (fRight.compareTo(BigDecimal.ZERO) == 0) {
+			return right;
+		}
+
+		BigDecimal ddfLeft = null;
+		try {
+			ddfLeft = secondDerivative.evaluateAt(leftVar).toBigDecimal(precision);
+		} catch (ExpressionConversionException e) {
+		}
+
+		if (ddfLeft != null && fLeft.multiply(ddfLeft, mathContext).compareTo(BigDecimal.ZERO) > 0) {
+			return left;
+		}
+
+		BigDecimal ddfRight = null;
+		try {
+			ddfRight = secondDerivative.evaluateAt(rightVar).toBigDecimal(precision);
+		} catch (ExpressionConversionException e) {
+		}
+
+		if (ddfRight != null && fRight.multiply(ddfRight, mathContext).compareTo(BigDecimal.ZERO) > 0) {
+			return right;
+		}
+
+		info(String.format("Expression: %s.", expression));
+		info(String.format("Second Derivative: %s.", secondDerivative));
+		info(String.format("f(%s) = %s\tf(%s) = %s", left.toPlainString(), fLeft.toPlainString(), right.toPlainString(),
+				fRight.toPlainString()));
+		if (ddfLeft != null) {
+			info(String.format("f''(%s) = %s", left.toPlainString(), ddfLeft.toString()));
+		}
+
+		if (ddfRight != null) {
+			info(String.format("f''(%s) = %s", right.toPlainString(), ddfRight.toString()));
+		}
+
+		throw new InitialApproximationException(expression, interval);
 	}
 
 	// -----LOGGING----- //

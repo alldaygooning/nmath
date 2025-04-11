@@ -13,27 +13,29 @@ import nikita.logging.NLogger;
 import nikita.math.NMath;
 import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
+import nikita.math.construct.Variable;
 import nikita.math.construct.expression.Expression;
 import nikita.math.construct.extremum.Minimum;
+import nikita.math.exception.construct.expression.ExpressionConversionException;
 
 public class MinimumRefiner extends Refiner {
 
-	static final String prefix = "MinimumRefiner";
+	static final String PREFIX = "MinimumRefiner";
 
 	public static Minimum refine(Expression expression, Interval interval, String var, Precision precision) {
 		ExprEvaluator evaluator = new ExprEvaluator();
 		EvalEngine engine = evaluator.getEvalEngine();
 		engine.setNumericMode(true, precision.getNPrecision(), -1);
 
-		MathContext mathContext = new MathContext(precision.getPrecision().intValue() + extraPrecision, RoundingMode.HALF_UP);
+		MathContext mathContext = new MathContext(precision.getPrecision().intValue() + EXTRA_PRECISION, RoundingMode.HALF_UP);
 		Precision adjustedPrecision = new Precision(precision.getString());
-		adjustedPrecision.setPrecision(precision.getPrecision().add(new BigDecimal(extraPrecision)));
+		adjustedPrecision.setPrecision(precision.getPrecision().add(new BigDecimal(EXTRA_PRECISION)));
 
 		BigDecimal left = interval.getLeft();
 		BigDecimal right = interval.getRight();
 		BigDecimal length = interval.getLength();
 
-		if (length.compareTo(intervalMinLength) >= 0) {
+		if (length.compareTo(INTERVAL_LENGTH_MINIMUM) >= 0 && length.compareTo(INTERVAL_LENGTH_MAXIMUM) <= 0) {
 			String function = String.format("%s, %s>=%s && %s<=%s", expression, var, left.toPlainString(), var, right.toPlainString());
 			String domain = String.format("%s, %s", var, left.toPlainString());
 			String command = String.format("FindMinimum({%s}, {%s}, Method -> \"CMAES\")", function, domain);
@@ -45,7 +47,7 @@ public class MinimumRefiner extends Refiner {
 		}
 
 		info(String.format("Interval is shorter than Symja iteration step for Local Maximum Search: %s < %s.", length.toPlainString(),
-				intervalMinLength.toPlainString()));
+				INTERVAL_LENGTH_MINIMUM.toPlainString()));
 
 //		if (!NTrigonometry.containsTrigFunction(engine.parse(expression.toString()))) {
 //			Expression derivative = expression.derivative(var);
@@ -65,11 +67,17 @@ public class MinimumRefiner extends Refiner {
 
 		info("Resorting to brute force iterations.");
 		BigDecimal x = left;
-		BigDecimal step = precision.getAccuracy().min(minimalStep);
+		BigDecimal step = precision.getAccuracy().min(STEP_SIZE_MINIMUM);
 
 		minimum = null;
 		while (x.compareTo(right) <= 0) {
-			BigDecimal y = NMath.getBigDecimal(NMath.replaceAll(expression, x.toPlainString()), adjustedPrecision);
+			BigDecimal y;
+			try {
+				y = expression.evaluateAt(new Variable("x", x)).toBigDecimal(adjustedPrecision);
+			} catch (ExpressionConversionException e) {
+				x = x.add(step, mathContext);
+				continue;
+			}
 			if (minimum == null || minimum.getY().compareTo(y) > 0) {
 				minimum = new Minimum(x, y);
 			}
@@ -79,6 +87,6 @@ public class MinimumRefiner extends Refiner {
 	}
 
 	private static void info(String message) {
-		NLogger.info(String.format("%s: %s", prefix, message));
+		NLogger.info(String.format("%s: %s", PREFIX, message));
 	}
 }

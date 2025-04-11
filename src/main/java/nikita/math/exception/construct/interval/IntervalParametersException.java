@@ -1,6 +1,8 @@
 package nikita.math.exception.construct.interval;
 
-public class IntervalParametersException extends RuntimeException {
+import nikita.math.exception.construct.NMathException;
+
+public class IntervalParametersException extends NMathException {
 
 	private static final long serialVersionUID = 1L;
 

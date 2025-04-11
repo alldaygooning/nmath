@@ -10,9 +10,11 @@ import org.matheclipse.core.interfaces.IExpr;
 
 import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
+import nikita.math.construct.Variable;
 import nikita.math.construct.expression.Expression;
 import nikita.math.construct.extremum.Maximum;
 import nikita.math.construct.extremum.Minimum;
+import nikita.math.exception.construct.expression.ExpressionSolutionException;
 import nikita.math.solver.refine.MaximumRefiner;
 import nikita.math.solver.refine.MinimumRefiner;
 
@@ -44,21 +46,20 @@ public class NMath {
 		return engine.evaluate(command);
 	}
 
-	public static IExpr replaceAll(Expression expression, String replacement) {
-		return replaceAll(expression, "x", replacement);
-	}
-
-	public static IExpr solve(Expression expression, String variable, String equals, Precision precision) {
+	public static IExpr solve(Expression expression, Variable variable, String equals, Interval interval, Precision precision) {
 		ExprEvaluator evaluator = new ExprEvaluator();
 		EvalEngine engine = evaluator.getEvalEngine();
 		engine.setNumericMode(true, Integer.valueOf(precision.getNPrecision()), -1);
 
-		String command = String.format("Solve(%s==%s, %s)", expression, equals, variable);
-		return engine.evaluate(command);
-	}
+		String domain = String.format("%s>=%s, %s<=%s", variable.getName(), interval.getLeft().toPlainString(), variable.getName(),
+				interval.getRight().toPlainString());
+		String command = String.format("Solve({%s==%s, %s}, %s)", expression, equals, domain, variable.getName());
 
-	public static IExpr solve(Expression expression, String equals, Precision precision) {
-		return solve(expression, "x", equals, precision);
+		IExpr solution = engine.evaluate(command);
+		if (solution.toString().contains("Solve")) {
+			throw new ExpressionSolutionException(expression, equals);
+		}
+		return solution;
 	}
 
 	public static Maximum maximum(Expression expression, Interval interval, String var, Precision precision) {
@@ -71,6 +72,14 @@ public class NMath {
 
 	// ВСЕ ПРО BIGDECIMAL
 
+	public static BigDecimal getBigDecimal(String value, Precision precision) {
+		int scale = precision.getPrecision().intValue();
+		MathContext mc = new MathContext(scale);
+		BigDecimal bd = new BigDecimal(bigDecimalNormalize(value), mc);
+		bd = bd.setScale(scale, RoundingMode.HALF_UP);
+		return bd;
+	}
+
 	public static BigDecimal getBigDecimal(IExpr expr, Precision precision) {
 		ExprEvaluator evaluator = new ExprEvaluator();
 		EvalEngine engine = evaluator.getEvalEngine();
@@ -78,13 +87,9 @@ public class NMath {
 		String nPrecision = String.valueOf(precision.getNPrecision());
 		String command = String.format("N(%s, %s)", expr, nPrecision);
 		engine.setNumericMode(true, Integer.valueOf(precision.getNPrecision()), -1);
-		String formatted = bigDecimalNormalize(engine.evaluate(command).toString());
+		String formatted = engine.evaluate(command).toString();
 
-		int scale = precision.getPrecision().intValue();
-		MathContext mc = new MathContext(scale);
-		BigDecimal bd = new BigDecimal(formatted, mc);
-		bd = bd.setScale(scale, RoundingMode.HALF_UP);
-		return bd;
+		return (getBigDecimal(formatted, precision));
 	}
 
 	public static BigDecimal getBigDecimal(IExpr expr, Precision precision, int extraPrecision) { // Legacy method for extremum finders
@@ -97,19 +102,19 @@ public class NMath {
 		return getBigDecimal(expr, DEFAULT_BIGDECIMAL_PRECISION);
 	}
 
-	public static BigDecimal getBigDecimal(String value, Precision precision) {
-		int scale = precision.getPrecision().intValue();
-		MathContext mc = new MathContext(scale);
-		BigDecimal bd = new BigDecimal(bigDecimalNormalize(value), mc);
-		bd = bd.setScale(scale, RoundingMode.HALF_UP);
-		return bd;
-	}
-
 	public static BigDecimal getBigDecimal(String value) {
 		return getBigDecimal(value, DEFAULT_BIGDECIMAL_PRECISION);
 	}
 
-	private static String bigDecimalNormalize(String string) {
-		return string.replace("*10^", "E");
+	public static String bigDecimalNormalize(String string) {
+		string = string.replace("*10^", "E");
+		return string;
+	}
+
+	public static boolean equal(BigDecimal bd1, BigDecimal bd2, Precision precision) {
+		int scale = precision.getPrecision().intValue();
+		MathContext mc = new MathContext(scale);
+
+		return (bd1.subtract(bd2, mc).abs().compareTo(precision.getAccuracy()) < 0);
 	}
 }

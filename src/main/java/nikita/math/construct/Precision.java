@@ -1,6 +1,8 @@
 package nikita.math.construct;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 public class Precision {
 
@@ -55,5 +57,17 @@ public class Precision {
 			return 17;
 		}
 		return precision.intValue();
+	}
+
+	public MathContext getMathContext() {
+		int scale = this.precision.intValue();
+		MathContext mc = new MathContext(scale, RoundingMode.HALF_UP);
+		return mc;
+	}
+
+	public Precision getAdjustedPrecision(int adjustment) {
+		Precision adjustedPrecision = new Precision(this.getString());
+		adjustedPrecision.setPrecision(this.precision.add(new BigDecimal(adjustment)));
+		return adjustedPrecision;
 	}
 }
