@@ -1,27 +1,31 @@
 plugins {
     id 'java-library'
-//	id 'application'
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
+//    id 'application'
+//    id 'maven-publish'
+//    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
 }
+
+group = 'nikita'
+version = '1.0.0'
 
 repositories {
     mavenCentral()
-    
+
     maven {
         url = uri('https://oss.sonatype.org/content/repositories/snapshots')
     }
-    
+
     maven {
         url = uri('https://repo.maven.apache.org/maven2/')
     }
-    
+
     maven {
         url = uri('https://packages.orekit.org/repository/maven-snapshots/')
         mavenContent {
             snapshotsOnly()
         }
     }
-    
+
     maven {
         url = uri('https://oss.sonatype.org/content/repositories/snapshots')
         mavenContent {
@@ -31,21 +35,73 @@ repositories {
 }
 
 dependencies {
-	implementation("org.matheclipse:matheclipse-core:3.1.0-SNAPSHOT")
+    implementation("org.matheclipse:matheclipse-core:3.1.0-SNAPSHOT")
     implementation 'com.google.guava:guava:30.1.1-jre'
 }
 
-shadowJar {
-    archiveClassifier.set('all')
-}
-
-//application {
+// application {
 //    mainClass = 'nikita.Main'
+// }
+
+//publishing {
+//    publications {
+//        mavenJava(MavenPublication) {
+//            from components.java
+//            pom {
+//                name.set('NMath')
+//                description.set('Wrapper for MathEclipse for simplified usage.')
+//                url.set('https://github.com/alldaygooning/nmath/tree/master')
+//                licenses {
+//                    license {
+//                        name.set('The Apache License, Version 2.0')
+//                        url.set('https://www.apache.org/licenses/LICENSE-2.0.txt')
+//                    }
+//                }
+//                developers {
+//                    developer {
+//                        id.set('nikita')
+//                        name.set('nikita')
+//                        email.set('nikita@example.com')
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    repositories {
+//        maven {
+//            name = "OSSRH"
+//            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+//            credentials {
+//                username = project.findProperty("ossrhUsername") ?: "token"
+//                password = project.findProperty("ossrhToken") ?: ""
+//            }
+//        }
+//    }
 //}
 
-//run {
-//    jvmArgs = [
-//    	"-XX:+AllowEnhancedClassRedefinition",
-//    	"-XX:HotswapAgent=fatjar"
-//    	]
+//signing {
+//    useGpgCmd()
+//    sign publishing.publications.mavenJava
 //}
+
+//nexusPublishing {
+//    repositories {
+//        sonatype {
+//            nexusUrl.set(uri("https://oss.sonatype.org/service/local/"))
+//            snapshotRepositoryUrl.set(uri("https://oss.sonatype.org/content/repositories/snapshots/"))
+//            username.set(findProperty("ossrhUsername") as String? ?: "token")
+//            password.set(findProperty("ossrhToken") as String? ?: "")
+//        }
+//    }
+//}
+
+// shadowJar {
+//    archiveClassifier.set('all')
+// }
+
+// run {
+//    jvmArgs = [
+//        "-XX:+AllowEnhancedClassRedefinition",
+//        "-XX:HotswapAgent=fatjar"
+//    ]
+// }
