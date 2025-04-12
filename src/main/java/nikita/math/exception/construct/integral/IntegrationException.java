@@ -7,6 +7,6 @@ public class IntegrationException extends NMathException {
 	private static final long serialVersionUID = 1L;
 
 	public IntegrationException(Integral integral, String method, String reason) {
-		super(String.format("%s could not be evaluated using %s due to: %s.", integral.toBeautifulString(), method, reason));
+		super(String.format("%s could not be evaluated using '%s' due to: %s.", integral.toBeautifulString(), method, reason));
 	}
 }

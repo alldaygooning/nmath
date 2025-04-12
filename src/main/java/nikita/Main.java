@@ -2,11 +2,12 @@ package nikita;
 
 import java.math.BigDecimal;
 
+import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
-import nikita.math.construct.Variable;
-import nikita.math.construct.calculus.Integral;
 import nikita.math.construct.expression.Expression;
-import nikita.math.solver.integrate.Integrator;
+import nikita.math.solver.root.single.ChordRootFinder;
+import nikita.math.solver.root.single.NewtonRootFinder;
+import nikita.math.solver.root.single.SingleRootFinder;
 
 public class Main {
 	public static void main(String[] args) {
@@ -58,22 +59,22 @@ public class Main {
 //
 //		System.out.println(SimpleIterationsSystemRootFinder.searchIterations(system, initialApproximation, precision));
 
-//		Expression expression = new Expression("sqrt(3*x)");
-//		Interval interval = new Interval(BigDecimal.valueOf(0), BigDecimal.valueOf(1));
-//		Precision precision = new Precision("0.0001");
+		Expression expression = new Expression("sin(x) * tan(x) - x");
+		Interval interval = new Interval(BigDecimal.valueOf(-3), BigDecimal.valueOf(-0.5));
+		Precision precision = new Precision("0.000001");
 
-//		System.out.println("ROOTS COUNT: " + SingleRootFinder.estimateRootsNumber(expression, interval, precision));
+		System.out.println("ROOTS COUNT: " + SingleRootFinder.estimateRootsNumber(expression, interval, precision));
 
-//		System.out.println(NewtonRootFinder.find(expression, interval, precision));
+		System.out.println(NewtonRootFinder.find(expression, interval, precision));
 //		System.out.println(SimpleIterationsRootFinder.find(expression, interval, precision));
-//		System.out.println(ChordRootFinder.find(expression, interval, precision));
+		System.out.println(ChordRootFinder.find(expression, interval, precision));
 
-		Expression expression = new Expression("2*x^3-3*x^2+5*x-9");
-		Integral integral = new Integral(expression, new Variable("x"), BigDecimal.valueOf(1), BigDecimal.valueOf(2));
-		Precision precision = new Precision("0.00000000000001");
-		int n = 10;
-
-		Integrator.evaluate(integral, n, precision, "simpson");
+//		Expression expression = new Expression("2*x^3-3*x^2+5*x-9");
+//		Integral integral = new Integral(expression, new Variable("x"), BigDecimal.valueOf(1), BigDecimal.valueOf(2));
+//		Precision precision = new Precision("0.00000000000001");
+//		int n = 10;
+//
+//		Integrator.evaluate(integral, n, precision, "simpson");
 		
 //		Expression expression = new Expression(
 //				"(x^3 + sin(x))/(x + 1) + e^x/(ln(x + 2) + 3) + cos(x)/(x^2 + 3.14159) + sqrt(x - 1)/(e + x^2) + arctan(x)/(ln(x + 3.14159) + e) + ((x + 5)^2)/(sin(x) + cos(x) + 1) + (exp(-x^2) + 1)/(sqrt(x^2 + 1) + ln(x + e) + 2)");

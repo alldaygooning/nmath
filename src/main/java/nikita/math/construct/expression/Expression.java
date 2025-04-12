@@ -157,7 +157,6 @@ public class Expression {
 	public IExpr getExpr() {
 		ExprEvaluator evaluator = new ExprEvaluator();
 		EvalEngine engine = evaluator.getEvalEngine();
-
 		return engine.evaluate(string);
 	}
 
