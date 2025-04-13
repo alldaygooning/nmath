@@ -1,8 +1,6 @@
 plugins {
-//    id 'java-library'
-    id 'application'
-//    id 'maven-publish'
-//    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
+//    id 'application'
+    id 'java-library'
 }
 
 group = 'nikita'
@@ -37,71 +35,22 @@ repositories {
 dependencies {
     implementation("org.matheclipse:matheclipse-core:3.1.0-SNAPSHOT")
     implementation 'com.google.guava:guava:30.1.1-jre'
+    
+	// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+	testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
+	testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.0")
+	testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.0")
 }
 
- application {
-    mainClass = 'nikita.Main'
- }
+test {
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+    }
+}
 
-//publishing {
-//    publications {
-//        mavenJava(MavenPublication) {
-//            from components.java
-//            pom {
-//                name.set('NMath')
-//                description.set('Wrapper for MathEclipse for simplified usage.')
-//                url.set('https://github.com/alldaygooning/nmath/tree/master')
-//                licenses {
-//                    license {
-//                        name.set('The Apache License, Version 2.0')
-//                        url.set('https://www.apache.org/licenses/LICENSE-2.0.txt')
-//                    }
-//                }
-//                developers {
-//                    developer {
-//                        id.set('nikita')
-//                        name.set('nikita')
-//                        email.set('nikita@example.com')
-//                    }
-//                }
-//            }
-//        }
-//    }
-//    repositories {
-//        maven {
-//            name = "OSSRH"
-//            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-//            credentials {
-//                username = project.findProperty("ossrhUsername") ?: "token"
-//                password = project.findProperty("ossrhToken") ?: ""
-//            }
-//        }
-//    }
-//}
 
-//signing {
-//    useGpgCmd()
-//    sign publishing.publications.mavenJava
-//}
-
-//nexusPublishing {
-//    repositories {
-//        sonatype {
-//            nexusUrl.set(uri("https://oss.sonatype.org/service/local/"))
-//            snapshotRepositoryUrl.set(uri("https://oss.sonatype.org/content/repositories/snapshots/"))
-//            username.set(findProperty("ossrhUsername") as String? ?: "token")
-//            password.set(findProperty("ossrhToken") as String? ?: "")
-//        }
-//    }
-//}
-
-// shadowJar {
-//    archiveClassifier.set('all')
-// }
-
-// run {
-//    jvmArgs = [
-//        "-XX:+AllowEnhancedClassRedefinition",
-//        "-XX:HotswapAgent=fatjar"
-//    ]
+// application {
+//    mainClass = 'nikita.Main'
 // }

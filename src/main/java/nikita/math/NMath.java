@@ -10,11 +10,9 @@ import org.matheclipse.core.interfaces.IExpr;
 
 import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
-import nikita.math.construct.Variable;
 import nikita.math.construct.expression.Expression;
 import nikita.math.construct.extremum.Maximum;
 import nikita.math.construct.extremum.Minimum;
-import nikita.math.exception.construct.expression.ExpressionSolutionException;
 import nikita.math.solver.refine.MaximumRefiner;
 import nikita.math.solver.refine.MinimumRefiner;
 
@@ -46,20 +44,11 @@ public class NMath {
 		return engine.evaluate(command);
 	}
 
-	public static IExpr solve(Expression expression, Variable variable, String equals, Interval interval, Precision precision) {
+	public static EvalEngine getEngine(Precision precision) {
 		ExprEvaluator evaluator = new ExprEvaluator();
 		EvalEngine engine = evaluator.getEvalEngine();
-		engine.setNumericMode(true, Integer.valueOf(precision.getNPrecision()), -1);
-
-		String domain = String.format("%s>=%s, %s<=%s", variable.getName(), interval.getLeft().toPlainString(), variable.getName(),
-				interval.getRight().toPlainString());
-		String command = String.format("Solve({%s==%s, %s}, %s)", expression, equals, domain, variable.getName());
-
-		IExpr solution = engine.evaluate(command);
-		if (solution.toString().contains("Solve")) {
-			throw new ExpressionSolutionException(expression, equals);
-		}
-		return solution;
+		engine.setNumericMode(true, Integer.valueOf(precision.getNPrecision()), precision.getPrecision().intValue());
+		return engine;
 	}
 
 	public static Maximum maximum(Expression expression, Interval interval, String var, Precision precision) {

@@ -37,6 +37,9 @@ public class Variable {
 
 	@Override
 	public String toString() {
-		return String.format("%s = %s", this.name, this.value.toPlainString());
+		if (this.value != null) {
+			return String.format("%s = %s", this.name, this.value.toPlainString());
+		}
+		return this.name;
 	}
 }

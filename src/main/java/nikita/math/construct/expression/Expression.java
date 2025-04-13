@@ -32,10 +32,6 @@ public class Expression {
 		this.string = expression.string;
 	}
 
-	public String toString() {
-		return string;
-	}
-
 	public boolean isTrigonometric() {
 		ExprEvaluator evaluator = new ExprEvaluator();
 		return NTrigonometry.containsTrigFunction(evaluator.eval(string));
@@ -84,6 +80,10 @@ public class Expression {
 		System.out.println(denominators);
 	}
 
+	public Equation getEquation(Expression other) {
+		return new Equation(this, other);
+	}
+
 	// ОПЕРАЦИИ
 
 	public Expression inverse() {
@@ -118,16 +118,6 @@ public class Expression {
 
 	public Expression evaluateAt(Variable variable, Precision precision) {
 		return new Expression(NMath.replaceAll(this, variable.getName(), variable.getValue().toPlainString(), precision).toString());
-	}
-
-	public List<BigDecimal> roots(Variable variable, Interval interval, Precision precision) {
-		IExpr rootsRules = NMath.solve(this, variable, "0", interval, precision);
-		List<BigDecimal> roots = new ArrayList<BigDecimal>();
-		for (int i = 1; i < rootsRules.size(); i++) {
-			BigDecimal x = NMath.getBigDecimal(rootsRules.getAt(i).getAt(1).getAt(2), precision);
-			roots.add(x);
-		}
-		return roots;
 	}
 
 	// BIGDECIMAL!
@@ -192,6 +182,23 @@ public class Expression {
 		for (int i = 1; i <= expr.argSize(); i++) {
 			getDenominators(expr.getAt(i), denominators);
 		}
+	}
+
+	public String getString() {
+		return string;
+	}
+
+	@Override
+	public String toString() {
+		return string;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Expression) {
+			return this.string.equals(((Expression) obj).getString());
+		}
+		return false;
 	}
 }
 

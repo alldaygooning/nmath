@@ -20,6 +20,7 @@ import nikita.math.construct.Precision;
 import nikita.math.construct.Variable;
 import nikita.math.construct.expression.Expression;
 import nikita.math.exception.construct.expression.ExpressionConversionException;
+import nikita.math.exception.construct.expression.ExpressionEvaluationException;
 import nikita.math.exception.construct.expression.ExpressionSolutionException;
 import nikita.math.exception.construct.root.RootsNumberEstimationException;
 import nikita.math.solver.root.RootFinder;
@@ -128,14 +129,16 @@ public abstract class SingleRootFinder extends RootFinder {
 		} catch (ExpressionConversionException e) {
 
 		}
-		List<BigDecimal> roots = expression.roots(new Variable("x"), interval, precision);
-		for (BigDecimal x : roots) {
-			BigDecimal y = expression.evaluateAt(new Variable("x", x)).toBigDecimal(precision);
-
-			Point point = new Point(x, y);
-			points.add(point);
+		List<Expression> expressedRoots = expression.getEquation(new Expression("0")).solve(interval, new Variable("x"), precision);
+		for (Expression expressedRoot : expressedRoots) {
+			try {
+				BigDecimal x = expressedRoot.toBigDecimal(precision);
+				BigDecimal y = expression.evaluateAt(new Variable("x", x)).toBigDecimal();
+				points.add(new Point(x, y));
+			} catch (ExpressionConversionException | ExpressionEvaluationException e) {
+				e.printStackTrace();
+			}
 		}
-
 		return points;
 	}
 
