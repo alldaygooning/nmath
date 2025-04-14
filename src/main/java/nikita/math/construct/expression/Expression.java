@@ -17,10 +17,7 @@ import nikita.math.exception.construct.expression.ExpressionConversionException;
 import nikita.math.exception.construct.interval.IncontinuousIntervalException;
 import nikita.math.trigonometry.NTrigonometry;
 
-
 public class Expression {
-
-	private static final Precision DEFAULT_BIGDECIMAL_PRECISION = new Precision("0.0001");
 
 	String string;
 
@@ -35,11 +32,6 @@ public class Expression {
 	public boolean isTrigonometric() {
 		ExprEvaluator evaluator = new ExprEvaluator();
 		return NTrigonometry.containsTrigFunction(evaluator.eval(string));
-	}
-
-	public String getWolframString() {
-		ExprEvaluator evaluator = new ExprEvaluator();
-		return evaluator.eval(string).toMMA();
 	}
 
 	public boolean isContinious(Interval interval) { // Пока вот так
@@ -60,7 +52,7 @@ public class Expression {
 			if (fLeft.multiply(fRight).compareTo(BigDecimal.ZERO) > 0) {
 				return false;
 			}
-			if(fLeft.compareTo(BigDecimal.ZERO) == 0 && fRight.compareTo(BigDecimal.ZERO) == 0) {
+			if (fLeft.compareTo(BigDecimal.ZERO) == 0 && fRight.compareTo(BigDecimal.ZERO) == 0) {
 				return false;
 			}
 		} catch (ExpressionConversionException e) {
@@ -70,18 +62,10 @@ public class Expression {
 		return true;
 	}
 
-	public void singularities() {
-		denominators();
-	}
-
-	private void denominators() {
+	public List<Expression> getDenominators() {
 		List<Expression> denominators = new ArrayList<Expression>();
-		getDenominators(this.getExpr(), denominators);
-		System.out.println(denominators);
-	}
-
-	public Equation getEquation(Expression other) {
-		return new Equation(this, other);
+		searchDenominators(this.getExpr(true), denominators);
+		return denominators;
 	}
 
 	// ОПЕРАЦИИ
@@ -139,49 +123,50 @@ public class Expression {
 	}
 
 	public BigDecimal toBigDecimal() {
-		return this.toBigDecimal(DEFAULT_BIGDECIMAL_PRECISION);
+		return this.toBigDecimal(NMath.DEFAULT_BIGDECIMAL_PRECISION);
 	}
 
 	// IExpr
 
-	public IExpr getExpr() {
-		ExprEvaluator evaluator = new ExprEvaluator();
-		EvalEngine engine = evaluator.getEvalEngine();
-		return engine.evaluate(string);
-	}
+	private void searchDenominators(IExpr expr, List<Expression> denominators) {
+		if (expr == null)
+			return;
 
-	public void getDenominators(IExpr expr, List<Expression> denominators) {
-	    if (expr == null)
-	        return;
-
+		// Деление реализовано через отрицательные степени
 		if (expr.head().equals(F.Power) && expr.getAt(2).isNegative()) {
-			Expression denominator = new Expression(String.format("%s^%s", expr.getAt(1), expr.getAt(2).abs()));
+			IExpr base = expr.getAt(1);
+			IExpr power = expr.getAt(2).abs();
+			Expression denominator = new Expression(String.format("%s%s", base, power.isOne() ? "" : String.format("^%s", power)));
 			denominators.add(denominator);
 		}
-		else if (expr.head().equals(F.Csc)) {
-			Expression denominator = new Expression(String.format("Sin(%s)", expr.getAt(1).toString()));
-			denominators.add(denominator);
-		}
-		else if (expr.head().equals(F.Sec)) {
-			Expression denominator = new Expression(String.format("Cos(%s)", expr.getAt(1).toString()));
-			denominators.add(denominator);
-		}
-		else if (expr.head().equals(F.Cot)) {
-			Expression denominator = new Expression(String.format("Tan(%s)", expr.getAt(1).toString()));
-			denominators.add(denominator);
-		} else if (expr.head().equals(F.Tan)) {
-			Expression denominator = new Expression(String.format("Cot(%s)", expr.getAt(1).toString()));
-			denominators.add(denominator);
-		}
-//		System.out.println(expr + " " + expr.head());
-//		for (int i = 0; i <= expr.argSize(); i++) {
-//			System.out.println("Argument " + i + ": " + expr.getAt(i));
-//		}
-		
 
 		for (int i = 1; i <= expr.argSize(); i++) {
-			getDenominators(expr.getAt(i), denominators);
+			searchDenominators(expr.getAt(i), denominators);
 		}
+	}
+
+	// GETTERS & SETTERS //
+
+	public IExpr getExpr() {
+		return this.getExpr(false);
+	}
+
+	public IExpr getExpr(boolean holdForm) {
+		ExprEvaluator evaluator = new ExprEvaluator();
+		String command = string;
+		if (holdForm) {
+			command = String.format("HoldForm(%s)", string);
+		}
+		return evaluator.eval(command);
+	}
+
+	public String getWolframString() {
+		ExprEvaluator evaluator = new ExprEvaluator();
+		return evaluator.eval(string).toMMA();
+	}
+
+	public Equation getEquation(Expression other) {
+		return new Equation(this, other);
 	}
 
 	public String getString() {
@@ -201,4 +186,3 @@ public class Expression {
 		return false;
 	}
 }
-

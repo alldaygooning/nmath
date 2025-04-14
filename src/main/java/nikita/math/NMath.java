@@ -18,7 +18,7 @@ import nikita.math.solver.refine.MinimumRefiner;
 
 public class NMath {
 
-	private static final Precision DEFAULT_BIGDECIMAL_PRECISION = new Precision("0.0001");
+	public static final Precision DEFAULT_BIGDECIMAL_PRECISION = new Precision("0.0000001");
 
 	public static IExpr replaceAll(Expression expression, String variable, String replacement) {
 		ExprEvaluator evaluator = new ExprEvaluator();
