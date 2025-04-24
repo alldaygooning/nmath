@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
 import nikita.math.construct.Variable;
+import nikita.math.construct.equation.Equation;
 
 public class EquationTest {
 

@@ -8,11 +8,11 @@ import java.util.Map;
 
 import nikita.logging.NLogger;
 import nikita.math.construct.Interval;
-import nikita.math.construct.Point;
 import nikita.math.construct.Precision;
 import nikita.math.construct.Variable;
-import nikita.math.construct.calculus.Integral;
+import nikita.math.construct.calculus.integral.Integral;
 import nikita.math.construct.expression.Expression;
+import nikita.math.construct.point.Point;
 import nikita.math.exception.construct.integral.IntegrationException;
 import nikita.math.solver.integrate.rectangle.RectangleIntegrator;
 import nikita.math.solver.integrate.simpson.SimpsonIntegrator;

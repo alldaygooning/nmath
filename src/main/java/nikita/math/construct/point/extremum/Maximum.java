@@ -1,4 +1,4 @@
-package nikita.math.construct.extremum;
+package nikita.math.construct.point.extremum;
 
 import java.math.BigDecimal;
 

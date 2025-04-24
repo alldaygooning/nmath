@@ -5,10 +5,10 @@ import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import nikita.math.construct.Point;
 import nikita.math.construct.Precision;
 import nikita.math.construct.Variable;
 import nikita.math.construct.expression.Expression;
+import nikita.math.construct.point.Point;
 import nikita.math.solver.integrate.IntegratorMode;
 
 public enum RectangleIntegratorMode implements IntegratorMode {

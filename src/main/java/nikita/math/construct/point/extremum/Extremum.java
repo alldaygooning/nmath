@@ -1,8 +1,8 @@
-package nikita.math.construct.extremum;
+package nikita.math.construct.point.extremum;
 
 import java.math.BigDecimal;
 
-import nikita.math.construct.Point;
+import nikita.math.construct.point.Point;
 
 public class Extremum {
 

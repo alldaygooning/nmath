@@ -1,6 +1,6 @@
 package nikita.math.exception.construct.integral;
 
-import nikita.math.construct.calculus.Integral;
+import nikita.math.construct.calculus.integral.Integral;
 import nikita.math.exception.construct.NMathException;
 
 public class IntegrationException extends NMathException {

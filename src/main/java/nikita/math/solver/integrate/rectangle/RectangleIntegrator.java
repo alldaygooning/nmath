@@ -5,9 +5,9 @@ import java.math.MathContext;
 import java.util.List;
 
 import nikita.math.construct.Interval;
-import nikita.math.construct.Point;
 import nikita.math.construct.Precision;
-import nikita.math.construct.calculus.Integral;
+import nikita.math.construct.calculus.integral.Integral;
+import nikita.math.construct.point.Point;
 import nikita.math.exception.construct.expression.ExpressionConversionException;
 import nikita.math.exception.construct.expression.ExpressionEvaluationException;
 import nikita.math.exception.construct.integral.IntegrationException;
@@ -50,8 +50,8 @@ public class RectangleIntegrator extends Integrator implements Multimodal {
 
 		List<Point> partitionPoints;
 		try {
-			partitionPoints = this.mode.filter(getPartitionPoints(integral.getExpression(), interval, n, adjustedPrecision),
-					integral.getExpression(), adjustedPrecision);
+			partitionPoints = this.mode.filter(getPartitionPoints(integral.getIntegrand(), interval, n, adjustedPrecision),
+					integral.getIntegrand(), adjustedPrecision);
 		} catch (ExpressionEvaluationException | ExpressionConversionException e) {
 			// Значит, что не смогли во всех точках оценить функцию, потому что в каких-то
 			// точках функция не определена

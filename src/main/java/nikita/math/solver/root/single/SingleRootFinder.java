@@ -11,14 +11,14 @@ import javax.xml.xpath.XPathExpressionException;
 import org.matheclipse.core.interfaces.IExpr;
 import org.xml.sax.SAXException;
 
-import nikita.external.api.WolframAPI;
+import nikita.external.api.wolfram.WolframAPI;
 import nikita.logging.NLogger;
 import nikita.math.NMath;
 import nikita.math.construct.Interval;
-import nikita.math.construct.Point;
 import nikita.math.construct.Precision;
 import nikita.math.construct.Variable;
 import nikita.math.construct.expression.Expression;
+import nikita.math.construct.point.Point;
 import nikita.math.exception.construct.expression.ExpressionConversionException;
 import nikita.math.exception.construct.expression.ExpressionEvaluationException;
 import nikita.math.exception.construct.expression.ExpressionSolutionException;
@@ -104,7 +104,7 @@ public abstract class SingleRootFinder extends RootFinder {
 		String query = String.format("solve %s=0 for x in [%s, %s]", expression.getWolframString(), interval.getLeft().toPlainString(),
 				interval.getRight().toPlainString());
 
-		List<String> wolframRoots = WolframAPI.getSolutions(WolframAPI.query(query, precision));
+		List<String> wolframRoots = WolframAPI.getXmlSolutions(WolframAPI.query(query, precision));
 		for (String wolframRoot : wolframRoots) {
 			List<IExpr> roots = WolframAPI.getRules(wolframRoot);
 			for (IExpr root : roots) {

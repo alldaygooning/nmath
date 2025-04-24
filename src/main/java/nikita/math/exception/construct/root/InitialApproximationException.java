@@ -1,9 +1,9 @@
 package nikita.math.exception.construct.root;
 
 import nikita.math.construct.Interval;
-import nikita.math.construct.Point;
 import nikita.math.construct.expression.Expression;
 import nikita.math.construct.expression.ExpressionSystem;
+import nikita.math.construct.point.Point;
 
 public class InitialApproximationException extends RuntimeException {
 	private static final long serialVersionUID = 1L;

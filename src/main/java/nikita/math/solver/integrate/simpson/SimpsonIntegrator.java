@@ -5,9 +5,9 @@ import java.math.MathContext;
 import java.util.List;
 
 import nikita.math.construct.Interval;
-import nikita.math.construct.Point;
 import nikita.math.construct.Precision;
-import nikita.math.construct.calculus.Integral;
+import nikita.math.construct.calculus.integral.Integral;
+import nikita.math.construct.point.Point;
 import nikita.math.exception.construct.expression.ExpressionConversionException;
 import nikita.math.exception.construct.expression.ExpressionEvaluationException;
 import nikita.math.exception.construct.integral.IntegrationException;
@@ -42,7 +42,7 @@ public class SimpsonIntegrator extends Integrator {
 
 		List<Point> partitionPoints;
 		try {
-			partitionPoints = getPartitionPoints(integral.getExpression(), interval, n, adjustedPrecision);
+			partitionPoints = getPartitionPoints(integral.getIntegrand(), interval, n, adjustedPrecision);
 		} catch (ExpressionEvaluationException | ExpressionConversionException e) {
 			// Значит, что не смогли во всех точках оценить функцию, потому что в каких-то
 			// точках функция не определена

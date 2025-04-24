@@ -6,19 +6,23 @@ import java.math.RoundingMode;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 
 import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
 import nikita.math.construct.expression.Expression;
-import nikita.math.construct.extremum.Maximum;
-import nikita.math.construct.extremum.Minimum;
+import nikita.math.construct.point.extremum.Maximum;
+import nikita.math.construct.point.extremum.Minimum;
 import nikita.math.solver.refine.MaximumRefiner;
 import nikita.math.solver.refine.MinimumRefiner;
 
 public class NMath {
 
-	public static final Precision DEFAULT_BIGDECIMAL_PRECISION = new Precision("0.0000001");
+	public static final Precision DEFAULT_BIGDECIMAL_PRECISION = new Precision("0.0000000000001");
+	public static final Precision DEFAULT_PRECISION = new Precision("0.0000001");
+
+	public static final Precision DEFAULT_EXPRESSION_PRECISION = new Precision("0.0000000000000001");
 
 	public static IExpr replaceAll(Expression expression, String variable, String replacement) {
 		ExprEvaluator evaluator = new ExprEvaluator();
@@ -37,18 +41,10 @@ public class NMath {
 		EvalEngine engine = evaluator.getEvalEngine();
 
 		engine.setNumericMode(true, Integer.valueOf(precision.getNPrecision()), -1);
-
 		String formattedReplacement = engine.evaluate(replacement).toString();
 
 		String command = String.format("ReplaceAll(%s, %s->(%s))", expression.toString(), variable, formattedReplacement);
 		return engine.evaluate(command);
-	}
-
-	public static EvalEngine getEngine(Precision precision) {
-		ExprEvaluator evaluator = new ExprEvaluator();
-		EvalEngine engine = evaluator.getEvalEngine();
-		engine.setNumericMode(true, Integer.valueOf(precision.getNPrecision()), precision.getPrecision().intValue());
-		return engine;
 	}
 
 	public static Maximum maximum(Expression expression, Interval interval, String var, Precision precision) {
@@ -57,6 +53,25 @@ public class NMath {
 
 	public static Minimum minimum(Expression expression, Interval interval, String var, Precision precision) {
 		return MinimumRefiner.refine(expression, interval, var, precision);
+	}
+
+	// UTILITY
+
+	public static EvalEngine getEngine(Precision precision) {
+		return getEngine(precision.getNPrecision());
+	}
+
+	public static EvalEngine getEngine(int nPrecision) {
+		ExprEvaluator evaluator = new ExprEvaluator();
+		EvalEngine engine = evaluator.getEvalEngine();
+		engine.setNumericMode(true, nPrecision, -1);
+		return engine;
+	}
+
+	public static OutputFormFactory getOutputFormFactory(Precision precision) {
+		int significantDigits = precision.getNPrecision();
+		int exponentFigures = significantDigits + 2;
+		return OutputFormFactory.get(true, false, exponentFigures, significantDigits);
 	}
 
 	// ВСЕ ПРО BIGDECIMAL

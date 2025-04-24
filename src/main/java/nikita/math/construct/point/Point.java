@@ -1,4 +1,4 @@
-package nikita.math.construct;
+package nikita.math.construct.point;
 
 import java.math.BigDecimal;
 

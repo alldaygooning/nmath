@@ -24,9 +24,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
 import nikita.math.construct.expression.Expression;
-import nikita.math.construct.extremum.Extremum;
-import nikita.math.construct.extremum.Maximum;
-import nikita.math.construct.extremum.Minimum;
+import nikita.math.construct.point.extremum.Extremum;
+import nikita.math.construct.point.extremum.Maximum;
+import nikita.math.construct.point.extremum.Minimum;
 
 public abstract class Refiner {
 

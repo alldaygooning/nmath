@@ -15,7 +15,7 @@ import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
 import nikita.math.construct.Variable;
 import nikita.math.construct.expression.Expression;
-import nikita.math.construct.extremum.Maximum;
+import nikita.math.construct.point.extremum.Maximum;
 import nikita.math.exception.construct.expression.ExpressionConversionException;
 
 public class MaximumRefiner extends Refiner {

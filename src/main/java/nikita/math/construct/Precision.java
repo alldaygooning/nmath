@@ -48,10 +48,6 @@ public class Precision {
 		return string;
 	}
 
-	public String toString() {
-		return String.format("Precision up to %s (%s decimal places).", accuracy.toString(), precision.toString());
-	}
-
 	public int getNPrecision() {
 		if (precision.compareTo(new BigDecimal(17)) < 0) {
 			return 17;
@@ -69,5 +65,9 @@ public class Precision {
 		Precision adjustedPrecision = new Precision(this.getString());
 		adjustedPrecision.setPrecision(this.precision.add(new BigDecimal(adjustment)));
 		return adjustedPrecision;
+	}
+
+	public String toString() {
+		return String.format("Precision up to %s (%s decimal places).", accuracy.toString(), precision.toString());
 	}
 }

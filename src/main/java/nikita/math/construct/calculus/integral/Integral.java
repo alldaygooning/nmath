@@ -1,39 +1,41 @@
-package nikita.math.construct.calculus;
+package nikita.math.construct.calculus.integral;
 
 import java.math.BigDecimal;
 
+import nikita.math.construct.Interval;
 import nikita.math.construct.Variable;
 import nikita.math.construct.expression.Expression;
 
 public class Integral {
 
-	Expression expression;
+	Expression integrand;
 	Variable variable;
-	BigDecimal upper;
-	BigDecimal lower;
+	Interval interval;
 
 	public Integral(Expression expression, Variable variable) {
-		this.setExpression(expression);
+		this.setIntegrand(expression);
 		this.setVariable(variable);
 	}
 
 	public Integral(Expression expression, Variable variable, BigDecimal upper, BigDecimal lower) {
 		this(expression, variable);
 		if (lower.compareTo(upper) <= 0) {
-			this.setUpper(upper);
-			this.setLower(lower);
+			this.interval = new Interval(upper, lower);
 		} else {
-			this.setUpper(lower);
-			this.setLower(upper);
+			this.interval = new Interval(lower, upper);
 		}
 	}
 
-	public Expression getExpression() {
-		return expression;
+	public boolean isProper() {
+		return (interval.isFinite() && integrand.isContinious(interval));
 	}
 
-	public void setExpression(Expression expression) {
-		this.expression = expression;
+	public Expression getIntegrand() {
+		return integrand;
+	}
+
+	public void setIntegrand(Expression expression) {
+		this.integrand = expression;
 	}
 
 	public Variable getVariable() {
@@ -44,28 +46,24 @@ public class Integral {
 		this.variable = variable;
 	}
 
-	public BigDecimal getUpper() {
-		return upper;
-	}
-
-	public void setUpper(BigDecimal upper) {
-		this.upper = upper;
-	}
-
 	public BigDecimal getLower() {
-		return lower;
+		return interval.getLeft();
 	}
 
-	public void setLower(BigDecimal lower) {
-		this.lower = lower;
+	public BigDecimal getUpper() {
+		return interval.getRight();
 	}
 
 	public String toBeautifulString() {
-		String string = String.format("Integral of Expression '%s' with respsect to %s", expression, variable.getName());
+		BigDecimal lower = interval.getLeft();
+		BigDecimal upper = interval.getRight();
+
+		String string = String.format("Integral of Expression '%s' with respsect to %s", integrand, variable.getName());
 		if (upper != null && lower != null) {
 			return (string + String.format(" from %s to %s", lower.toPlainString(), upper.toPlainString()));
 		}
 		return (string);
 	}
+
 
 }
