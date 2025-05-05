@@ -14,6 +14,11 @@ public class Variable {
 		this.setNumericValue(value);
 	}
 
+	public Variable(String name, Expression expression) {
+		this.setName(name);
+		this.setSymbolicValue(expression);
+	}
+
 	public Variable(String name) {
 		this.setName(name);
 	}
@@ -47,6 +52,15 @@ public class Variable {
 			return numericValue.toPlainString();
 		} else if (symbolicValue != null) {
 			return symbolicValue.toString();
+		}
+		return null;
+	}
+
+	public String getStringValue(Precision precision) {
+		if (numericValue != null) {
+			return numericValue.toPlainString();
+		} else if (symbolicValue != null) {
+			return symbolicValue.toString(precision);
 		}
 		return null;
 	}

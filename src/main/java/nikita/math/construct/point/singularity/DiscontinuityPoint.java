@@ -34,6 +34,10 @@ public abstract class DiscontinuityPoint extends Discontinuity {
 		return this.equals(other);
 	}
 
+	public Expression getPoint() {
+		return point;
+	}
+
 	@Override
 	public String toBeautifulString() {
 		return String.format("%s of Expression '%s' at point '%s'.", name, expression, point);

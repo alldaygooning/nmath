@@ -19,7 +19,8 @@ public class ExpressionUtils {
 		if (expr.head().equals(F.Power) && expr.getAt(2).isNegative()) {
 			IExpr base = expr.getAt(1);
 			IExpr power = expr.getAt(2).abs();
-			Expression denominator = new Expression(String.format("%s%s", base, power.isOne() ? "" : String.format("^%s", power)));
+			String expressionString = String.format("(%s)%s", base, power.isOne() ? "" : String.format("^(%s)", power));
+			Expression denominator = new Expression(expressionString);
 			denominators.add(denominator);
 		}
 
@@ -121,12 +122,12 @@ public class ExpressionUtils {
 
 		if (expr.head().equals(F.Power)) {
 			IExpr param = expr.getAt(1).eval();
-			IExpr power = expr.getAt(2).eval();
+			IExpr power = expr.getAt(2).eval().abs();
 			if (!power.isNumber()) {
 				return;
 			}
 			double powerValue = power.evalf();
-			if (powerValue <= 0 || powerValue >= 1) {
+			if ((powerValue <= 0 || powerValue >= 1) && (powerValue >= 0 || powerValue <= -1)) {
 				return;
 			}
 			if (!power.head().equals(F.Rational)) {

@@ -17,7 +17,7 @@ public class SimpsonIntegrator extends Integrator {
 
 	public BigDecimal evaluate(Integral integral, int n, Precision precision) {
 		if (n % 2 != 0) {
-			throw new IntegrationException(integral, this.getName(), "n is has to be even");
+			throw new IntegrationException(integral, this.getFullName(), "n is has to be even");
 		}
 		
 		BigDecimal int1 = this.integrate(integral, n, precision);
@@ -46,7 +46,7 @@ public class SimpsonIntegrator extends Integrator {
 		} catch (ExpressionEvaluationException | ExpressionConversionException e) {
 			// Значит, что не смогли во всех точках оценить функцию, потому что в каких-то
 			// точках функция не определена
-			throw new IntegrationException(integral, this.getName(),
+			throw new IntegrationException(integral, this.getFullName(),
 					String.format("function should be continuous on Integration Interval %s.", interval.toString()));
 		}
 
@@ -70,7 +70,7 @@ public class SimpsonIntegrator extends Integrator {
 	}
 
 	@Override
-	public String getName() {
+	public String getFullName() {
 		return "Simpson's Integration Method";
 	}
 
@@ -85,7 +85,7 @@ public class SimpsonIntegrator extends Integrator {
 	}
 
 	@Override
-	public String getShorthand() {
+	public String getShortName() {
 		return "simpson";
 	}
 

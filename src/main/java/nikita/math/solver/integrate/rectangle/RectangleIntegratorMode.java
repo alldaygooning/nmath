@@ -64,4 +64,14 @@ public enum RectangleIntegratorMode implements IntegratorMode {
 		}
 		throw new IllegalArgumentException("No RectanlgeIntegratorMode with shorthand " + shorthand);
 	}
+
+	@Override
+	public String getName() {
+		return prefix;
+	}
+
+	@Override
+	public String getShorthand() {
+		return shorthand;
+	}
 }

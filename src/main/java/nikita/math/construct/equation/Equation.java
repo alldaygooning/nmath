@@ -36,7 +36,7 @@ public class Equation {
 
 	// НЕ КОРМИТЬ СЮДА ТРИГОНОМЕТРИЮ!
 	public List<Expression> solve(Variable variable, Precision precision) {
-		String command = String.format("Solve(%s==%s, %s)", left.toString(precision), right.toString(precision), variable.getName());
+		String command = String.format("NSolve(%s==%s, %s)", left.getString(), right.getString(), variable.getName());
 		return this.evaluate(command, precision);
 	}
 
@@ -56,7 +56,7 @@ public class Equation {
 
 		List<Expression> roots = new ArrayList<Expression>();
 
-		command = String.format("N(%s, %s)", command, precision.getNPrecision());
+		command = String.format("Quiet(N(%s, %s))", command, precision.getNPrecision());
 		IExpr rootsRules = evaluator.eval(command);
 		if (rootsRules.toString().contains("Solve")) {
 			return roots;

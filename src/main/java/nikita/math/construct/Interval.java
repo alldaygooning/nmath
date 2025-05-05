@@ -93,6 +93,9 @@ public class Interval {
 			}
 		}
 
+		if (nLeft == null || nRight == null) {
+			return roots;
+		}
 		nLeft = nLeft.toNumeric();
 		nRight = nRight.toNumeric();
 
@@ -120,10 +123,20 @@ public class Interval {
 		return right;
 	}
 
+	@Override
 	public String toString() {
 		String leftEndpoint = left != null ? left.toPlainString() : "-Infinity";
 		String rightEndpoint = right != null ? right.toPlainString() : "+Infinity";
 		return String.format("[%s; %s]", leftEndpoint, rightEndpoint);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Interval) {
+			Interval other = (Interval) obj;
+			return this.left.compareTo(other.left) == 0 && this.right.compareTo(other.right) == 0;
+		}
+		return false;
 	}
 
 	public BigDecimal getLength() {

@@ -43,7 +43,7 @@ public class TrapazoidIntegrator extends Integrator {
 		} catch (ExpressionEvaluationException | ExpressionConversionException e) {
 			// Значит, что не смогли во всех точках оценить функцию, потому что в каких-то
 			// точках функция не определена
-			throw new IntegrationException(integral, this.getName(),
+			throw new IntegrationException(integral, this.getFullName(),
 					String.format("function should be continuous on Integration Interval %s.", interval.toString()));
 		}
 
@@ -60,7 +60,7 @@ public class TrapazoidIntegrator extends Integrator {
 	}
 
 	@Override
-	public String getName() {
+	public String getFullName() {
 		return "Trapazoid Integration Method";
 	}
 
@@ -70,7 +70,7 @@ public class TrapazoidIntegrator extends Integrator {
 	}
 
 	@Override
-	public String getShorthand() {
+	public String getShortName() {
 		return "trapazoid";
 	}
 }

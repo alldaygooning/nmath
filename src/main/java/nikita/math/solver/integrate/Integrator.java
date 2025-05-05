@@ -11,6 +11,7 @@ import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
 import nikita.math.construct.Variable;
 import nikita.math.construct.calculus.integral.Integral;
+import nikita.math.construct.calculus.integral.IntegralKind;
 import nikita.math.construct.expression.Expression;
 import nikita.math.construct.point.Point;
 import nikita.math.exception.construct.integral.IntegrationException;
@@ -28,19 +29,19 @@ public abstract class Integrator {
 	private static final Integrator TRAPAZOID = new TrapazoidIntegrator();
 	private static final Integrator RECTANGLE = new RectangleIntegrator();
 
-	private static final Map<String, Integrator> INTEGRATORS = Map.ofEntries(
-			Map.entry(SIMPSON.getShorthand(), SIMPSON),
-			Map.entry(TRAPAZOID.getShorthand(), TRAPAZOID),
-			Map.entry(RECTANGLE.getShorthand(), RECTANGLE)
+	public static final Map<String, Integrator> INTEGRATORS = Map.ofEntries(
+			Map.entry(SIMPSON.getShortName(), SIMPSON),
+			Map.entry(TRAPAZOID.getShortName(), TRAPAZOID),
+			Map.entry(RECTANGLE.getShortName(), RECTANGLE)
 	);
 
 	public abstract BigDecimal evaluate(Integral integral, int n, Precision precision);
 
-	public abstract String getName();
+	public abstract String getFullName();
 
 	public abstract String getLogName();
 
-	public abstract String getShorthand();
+	public abstract String getShortName();
 
 	public int getOrder() {
 		return 2;
@@ -64,7 +65,23 @@ public abstract class Integrator {
 		if (integrator instanceof Multimodal) {
 			((Multimodal) integrator).setMode(mode);
 		}
-		integrator.info(String.format("Evaluating %s using %s.", integral.toBeautifulString(), integrator.getName()));
+		integrator.info(String.format("Evaluating %s using %s.", integral.toBeautifulString(), integrator.getFullName()));
+		if (integral.getKind() == IntegralKind.SECOND) {
+			if (!integral.isConvergent()) {
+				throw new IntegrationException(integral, method, "Integral does not converge");
+			}
+			List<BigDecimal> pp = integral.getPartitionPoints();
+			BigDecimal total = BigDecimal.ZERO;
+			MathContext mc = precision.getMathContext();
+			for (int i = 0; i < pp.size() - 1; i++) {
+				Integral subintegral = new Integral(integral.getIntegrand(), integral.getVariable(),
+						pp.get(i).add(precision.getAccuracy(), mc), pp.get(i + 1).subtract(precision.getAccuracy(), mc));
+				integrator.info(String.format("Evaluating Sub%s using %s.", subintegral.toBeautifulString(), integrator.getFullName()));
+				total = total.add(integrator.evaluate(subintegral, n, precision), mc);
+			}
+			integrator.info(String.format("I = %s", total.toPlainString()));
+			return;
+		}
 		integrator.evaluate(integral, n, precision);
 	}
 

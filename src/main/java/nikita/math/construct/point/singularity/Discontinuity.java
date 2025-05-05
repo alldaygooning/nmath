@@ -20,6 +20,10 @@ public abstract class Discontinuity extends Singularity {
 		this.expression = expression;
 	}
 
+	public Expression getExpression() {
+		return expression;
+	}
+
 
 	// f(point) does not exist here!
 	public static DiscontinuityPoint atPoint(Expression expression, Expression point) {
@@ -70,6 +74,15 @@ public abstract class Discontinuity extends Singularity {
 		
 		
 		return decoupledDiscontinuities;
+	}
+
+	public static List<DiscontinuityInterval> getIntervals(List<Discontinuity> discontinuities) {
+		return discontinuities.stream().filter(Discontinuity::isInterval).map(disc -> (DiscontinuityInterval) disc)
+				.collect(Collectors.toList());
+	}
+
+	public static List<DiscontinuityPoint> getPoints(List<Discontinuity> discontinuities) {
+		return discontinuities.stream().filter(Discontinuity::isPoint).map(disc -> (DiscontinuityPoint) disc).collect(Collectors.toList());
 	}
 
 	public boolean isInterval() {

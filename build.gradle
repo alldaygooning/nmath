@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'nikita'
-version = '1.0.0'
+version = '1.0.4'
 
 repositories {
     mavenCentral()
@@ -44,6 +44,12 @@ dependencies {
 	
 	// https://mvnrepository.com/artifact/org.json/json
 	implementation("org.json:json:20250107")
+	
+	// https://mvnrepository.com/artifact/ch.obermuhlner/big-math
+	implementation("ch.obermuhlner:big-math:2.3.2")
+	
+	implementation 'org.apache.logging.log4j:log4j-api:2.24.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.24.0'
 }
 
 test {
@@ -57,3 +63,8 @@ test {
  application {
     mainClass = 'nikita.Main'
  }
+ 
+ run {
+    systemProperty 'log4j.configurationFile', 
+        file('/home/gangster/Desktop/Homework (͠≖ ͜ʖ͠≖)/Методы Оптимизации/nmath/src/main/resources/log4j.properties').absolutePath
+}

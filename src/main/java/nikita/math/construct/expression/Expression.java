@@ -5,9 +5,10 @@ import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -28,6 +29,7 @@ public class Expression {
 
 	public static final Expression ZERO = new Expression("0");
 	public static final Expression ONE = new Expression("1");
+	public static final Expression E = new Expression("E");
 
 	String string;
 
@@ -45,7 +47,7 @@ public class Expression {
 	}
 
 	public boolean isContinious(Interval interval) { // Пока вот так
-		return true;
+		return (this.getSingularities(interval).size() == 0);
 	}
 
 	public boolean isComplex() {
@@ -59,7 +61,7 @@ public class Expression {
 
 	public boolean isInfinity() {
 		IExpr expr = this.getEvaluatedExpr();
-		return expr.isInfinity() || expr.isComplexInfinity();
+		return expr.isInfinity() || expr.isNegativeInfinity() || expr.isComplexInfinity();
 	}
 
 	public boolean isNumeric() {
@@ -117,6 +119,12 @@ public class Expression {
 		return (new Expression(evaluator.eval(command).toString()));
 	}
 
+	public Expression sub(Expression other) {
+		ExprEvaluator evaluator = new ExprEvaluator();
+		String command = String.format("(%s)-(%s)", string, other.string); // потеря точности
+		return (new Expression(evaluator.eval(command).toString()));
+	}
+
 	public Expression negative() {
 		ExprEvaluator evaluator = new ExprEvaluator();
 		String command = String.format("-(%s)", string);
@@ -129,6 +137,46 @@ public class Expression {
 		return new Expression(evaluator.eval(command).toString());
 	}
 
+	public Expression antiderivative(Variable variable) {
+		ExprEvaluator evaluator = new ExprEvaluator();
+		String command = String.format("Integrate(%s, %s)", string, variable.getName());
+		return new Expression(evaluator.eval(command).toString());
+	}
+
+	public Expression derivative(Variable variable) {
+		return this.derivative(variable.getName());
+	}
+
+	public Expression simplify(Precision precision) {
+		ExprEvaluator evaluator = new ExprEvaluator();
+		String command = String.format("FullSimplify(%s)", this.rationalize(precision).getString());
+		IExpr expr = evaluator.eval(command);
+		if (expr.isIndeterminate() || expr.head().equals(F.FullSimplify)) {
+			return this;
+		}
+		OutputFormFactory off = NMath.getOutputFormFactory(precision);
+		return new Expression(off.toString(expr));
+	}
+
+	// Добавить сюда проверку на пропавшие переменные. Он не должен делать так,
+	// чтобы они пропали!!
+	public Expression rationalize(Precision precision) {
+		ExprEvaluator evaluator = new ExprEvaluator();
+		String command = String.format("Rationalize(%s)", string); // ну может сюда ноль воткнуть?
+		IExpr expr = evaluator.eval(command);
+		if (expr.isIndeterminate() || expr.head().equals(F.Rationalize)) {
+			return this;
+		}
+		OutputFormFactory off = NMath.getOutputFormFactory(precision);
+		return new Expression(off.toString(expr));
+	}
+
+	public Expression power(Expression other, Precision precision) {
+		ExprEvaluator evaluator = new ExprEvaluator();
+		String command = String.format("(%s)^(%s)", string, other.string);
+		return new Expression(NMath.getOutputFormFactory(precision).toString(evaluator.eval(command)));
+	}
+
 	// ВЫЧИСЛЕНИЕ
 
 	public Expression evaluateAt(Variable variable) {
@@ -137,23 +185,29 @@ public class Expression {
 	}
 
 	public Expression evaluateAt(Variable variable, Precision precision) {
-		EvalEngine engine = NMath.getEngine(precision);
+		ExprEvaluator evaluator = new ExprEvaluator();
+		OutputFormFactory off = NMath.getOutputFormFactory(precision);
 
-		String command = String.format("N(ReplaceAll(%s, %s->(%s)), %s)", this, variable.getName(), variable.getStringValue(),
-				precision.getNPrecision());
-		return new Expression(engine.evaluate(command).toString());
+		String command = String.format("ReplaceAll(%s, %s->(%s))", this.toString(precision), variable.getName(),
+				variable.getStringValue(precision));
+		IExpr expr = evaluator.eval(command);
+		try {
+			String result = off.toString(evaluator.eval(F.N(expr, (long) precision.getNPrecision())));
+			return new Expression(result);
+		} catch (IterationLimitExceeded e) {
+			return new Expression(off.toString(expr));
+		}
 	}
 
 	// BIGDECIMAL!
 
 	public BigDecimal toBigDecimal(Precision precision) {
 		ExprEvaluator evaluator = new ExprEvaluator();
-		EvalEngine engine = evaluator.getEvalEngine();
+		OutputFormFactory off = NMath.getOutputFormFactory(precision);
 
 		String nPrecision = String.valueOf(precision.getNPrecision());
 		String command = String.format("N(%s, %s)", this.toString(), nPrecision);
-		engine.setNumericMode(true, Integer.valueOf(precision.getNPrecision()), -1);
-		String formatted = NMath.bigDecimalNormalize(engine.evaluate(command).toString());
+		String formatted = NMath.bigDecimalNormalize(off.toString(evaluator.eval(command)));
 
 		try {
 			return NMath.getBigDecimal(formatted, precision);
@@ -239,7 +293,7 @@ public class Expression {
 		return new Equation(this, other);
 	}
 
-	public void getSingularities(Interval interval) {
+	public List<Discontinuity> getSingularities(Interval interval) {
 
 		List<Discontinuity> discontinuities = new ArrayList<Discontinuity>();
 
@@ -282,8 +336,12 @@ public class Expression {
 				}
 				BigDecimal ppMid = ppRight.add(ppLeft, mc).divide(BigDecimal.valueOf(2), mc);
 				Expression evaluation = base.evaluateAt(new Variable("x", ppMid));
-				if (evaluation.isComplex() || evaluation.isNegative()) {
-					lbDiscontinuityIntervals.add(Discontinuity.atInterval(this, new Interval(ppLeft, ppRight)));
+				if (evaluation.isComplex() || evaluation.isNegative() || evaluation.equals(ZERO)) {
+					if (!ppLeft.equals(ppRight)) {
+						lbDiscontinuityIntervals.add(Discontinuity.atInterval(this, new Interval(ppLeft, ppRight)));
+					} else {
+						lbDiscontinuityPoints.add(Discontinuity.atPoint(this, pp1));
+					}
 				}
 
 			}
@@ -291,6 +349,7 @@ public class Expression {
 
 		List<Expression> logValues = this.getLogValues();
 		final List<DiscontinuityInterval> lvDiscontinuityIntervals = new ArrayList<DiscontinuityInterval>();
+		final List<DiscontinuityPoint> lvDiscontinuityPoints = new ArrayList<DiscontinuityPoint>();
 
 		logValues.forEach(value -> {
 			if (!value.containsSymbol(new Variable("x"))) {
@@ -320,16 +379,22 @@ public class Expression {
 				}
 				BigDecimal ppMid = ppRight.add(ppLeft, mc).divide(BigDecimal.valueOf(2), mc);
 				Expression evaluation = value.evaluateAt(new Variable("x", ppMid));
-				if (evaluation.isComplex() || evaluation.isNegative()) {
-					lvDiscontinuityIntervals.add(Discontinuity.atInterval(this, new Interval(ppLeft, ppRight)));
+				if (evaluation.isComplex() || evaluation.isNegative() || evaluation.equals(ZERO)) {
+					if (!ppLeft.equals(ppRight)) {
+						lvDiscontinuityIntervals.add(Discontinuity.atInterval(this, new Interval(ppLeft, ppRight)));
+					} else {
+						lvDiscontinuityPoints.add(Discontinuity.atPoint(this, pp1));
+					}
 				}
 			}
 		});
 
 		List<Discontinuity> lDecoupledDiscontinuities = new ArrayList<Discontinuity>();
-		lDecoupledDiscontinuities.addAll(lbDiscontinuityIntervals); // Log(b, a), b > 0
-		lDecoupledDiscontinuities.addAll(lbDiscontinuityPoints); // Log(b, a), b != 1
-		lDecoupledDiscontinuities.addAll(lvDiscontinuityIntervals);// Log(b, a), a > 0
+		// Log(b, a), b == 0
+		lDecoupledDiscontinuities.addAll(lbDiscontinuityIntervals); // Log(b, a), b < 0
+		lDecoupledDiscontinuities.addAll(lbDiscontinuityPoints); // Log(b, a), b == 1
+		lDecoupledDiscontinuities.addAll(lvDiscontinuityIntervals);// Log(b, a), a < 0
+		lDecoupledDiscontinuities.addAll(lvDiscontinuityPoints); // Log(b, a), a == 0
 		lDecoupledDiscontinuities = Discontinuity.decouple(lDecoupledDiscontinuities);
 
 		// СИНГУЛЯРНОСТИ ПО КОРНЯМ
@@ -371,6 +436,7 @@ public class Expression {
 			}
 		});
 		
+		
 		// СИНГУЛЯРНОСТИ ПО ЧИСЛИТЕЛЯМ
 
 		List<Expression> denominators = this.getDenominators();
@@ -380,7 +446,7 @@ public class Expression {
 			List<Expression> points = equation.solve(interval, new Variable("x"), NMath.DEFAULT_EXPRESSION_PRECISION);
 			points.forEach(point -> denomDiscontinuities.add(Discontinuity.atPoint(this, point)));
 		}
-
+		
 		// СИНГУЛЯРНОСТИ ПО ТАНГЕНСАМ
 
 		List<Expression> tanParams = this.getTanParams();
@@ -416,9 +482,7 @@ public class Expression {
 		discontinuities.addAll(cotDiscontinuities);
 		discontinuities = Discontinuity.decouple(discontinuities);
 
-		discontinuities.forEach(disc -> System.out.println(disc.toShortString()));
-
-//		discontinuities.forEach(disc -> System.out.println(disc.toBeautifulString()));
+		return (discontinuities);
 	}
 
 	// OVERRIDES //
@@ -435,6 +499,10 @@ public class Expression {
 	@Override
 	public String toString() {
 		return this.toString(NMath.DEFAULT_EXPRESSION_PRECISION);
+	}
+
+	public String getString() {
+		return string;
 	}
 
 	@Override

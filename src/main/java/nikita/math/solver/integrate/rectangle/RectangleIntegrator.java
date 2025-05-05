@@ -55,7 +55,7 @@ public class RectangleIntegrator extends Integrator implements Multimodal {
 		} catch (ExpressionEvaluationException | ExpressionConversionException e) {
 			// Значит, что не смогли во всех точках оценить функцию, потому что в каких-то
 			// точках функция не определена
-			throw new IntegrationException(integral, this.getName(),
+			throw new IntegrationException(integral, this.getFullName(),
 					String.format("function should be continuous on Integration Interval %s.", interval.toString()));
 		}
 
@@ -82,8 +82,13 @@ public class RectangleIntegrator extends Integrator implements Multimodal {
 	}
 
 	@Override
-	public String getName() {
-		return String.format("%s-Rectangle Integration Method", this.mode.getPrefix());
+	public IntegratorMode getMode() {
+		return this.mode;
+	}
+
+	@Override
+	public String getFullName() {
+		return String.format("Rectangle Integration Method");
 	}
 
 	@Override
@@ -92,7 +97,12 @@ public class RectangleIntegrator extends Integrator implements Multimodal {
 	}
 
 	@Override
-	public String getShorthand() {
+	public String getShortName() {
 		return "rectangles";
+	}
+
+	@Override
+	public List<IntegratorMode> getModes() {
+		return List.of(RectangleIntegratorMode.AVG, RectangleIntegratorMode.LEFT, RectangleIntegratorMode.RIGHT);
 	}
 }
