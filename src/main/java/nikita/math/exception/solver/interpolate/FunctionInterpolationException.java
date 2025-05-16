@@ -8,4 +8,8 @@ public class FunctionInterpolationException extends RuntimeException {
 	public FunctionInterpolationException(FunctionInterpolator interpolator, String reason) {
 		super(String.format("Interpolation by '%s' failued due to: %s.", interpolator.getFullName(), reason));
 	}
+
+	public FunctionInterpolationException(String reason) {
+		super(String.format("Interpolation failed due to: %s.", reason));
+	}
 }

@@ -23,16 +23,11 @@ public class BesselFunctionInterpolator extends FunctionInterpolator {
 
 	public BesselFunctionInterpolator() {
 		super(FULL_NAME, LOGGER_NAME, SHORT_NAME);
+		this.requiresUniformity = true;
 	}
 
 	@Override
 	public Expression interpolate(List<Point> points, Precision precision, FunctionInterpolationContext context) {
-		if (!this.isUniform(points, precision)) {
-			throw new FunctionInterpolationException(this, "Method requires the grid to be uniform");
-		} else if (points.size() % 2 != 0) {
-			throw new FunctionInterpolationException(this, "Method requires even number of points");
-		}
-
 		MathContext mc = precision.getMathContext();
 
 		Expression t = new Expression("t");
@@ -55,6 +50,14 @@ public class BesselFunctionInterpolator extends FunctionInterpolator {
 		interpolated = interpolated.evaluateAt(new Variable("t", x0), precision);
 
 		return interpolated;
+	}
+
+	@Override
+	protected void check(List<Point> points, BigDecimal x, Precision precision) {
+		super.check(points, x, precision);
+		if (points.size() % 2 != 0) {
+			throw new FunctionInterpolationException(this, "Method requires even number of points");
+		}
 	}
 
 }

@@ -98,7 +98,6 @@ public class NewtonFunctionInterpolator extends FunctionInterpolator {
 				current.add(a.subtract(b, mc));
 			}
 		}
-		differences.forEach(d -> System.out.println(d));
 
 		return differences;
 	}
