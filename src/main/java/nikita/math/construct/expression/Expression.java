@@ -29,6 +29,7 @@ public class Expression {
 
 	public static final Expression ZERO = new Expression("0");
 	public static final Expression ONE = new Expression("1");
+	public static final Expression TWO = new Expression("2");
 	public static final Expression E = new Expression("E");
 
 	String string;
@@ -113,16 +114,40 @@ public class Expression {
 		return (new Expression(evaluator.eval(command).toString()));
 	}
 
-	public Expression multiply(Expression expression) {
+	public Expression multiply(Expression other) {
+		return this.multiply(other, NMath.DEFAULT_EXPRESSION_PRECISION);
+	}
+
+	public Expression multiply(Expression other, Precision precision) {
 		ExprEvaluator evaluator = new ExprEvaluator();
-		String command = String.format("((%s)*(%s))", string, expression);
-		return (new Expression(evaluator.eval(command).toString()));
+		String command = String.format("((%s)*(%s))", string, other.string);
+		OutputFormFactory off = NMath.getOutputFormFactory(precision);
+		return (new Expression(off.toString(evaluator.eval(command))));
+	}
+
+	public Expression divide(Expression other, Precision precision) {
+		ExprEvaluator evaluator = new ExprEvaluator();
+		String command = String.format("((%s)/(%s))", string, other.string);
+		OutputFormFactory off = NMath.getOutputFormFactory(precision);
+		return (new Expression(off.toString(evaluator.eval(command))));
 	}
 
 	public Expression sub(Expression other) {
+		return this.sub(other, NMath.DEFAULT_EXPRESSION_PRECISION);
+	}
+
+	public Expression sub(Expression other, Precision precision) {
 		ExprEvaluator evaluator = new ExprEvaluator();
-		String command = String.format("(%s)-(%s)", string, other.string); // потеря точности
-		return (new Expression(evaluator.eval(command).toString()));
+		String command = String.format("(%s)-(%s)", string, other.string);
+		OutputFormFactory off = NMath.getOutputFormFactory(precision);
+		return (new Expression(off.toString(evaluator.eval(command))));
+	}
+	
+	public Expression add(Expression other, Precision precision) {
+		ExprEvaluator evaluator = new ExprEvaluator();
+		String command = String.format("(%s)+(%s)", string, other.string); 
+		OutputFormFactory off = NMath.getOutputFormFactory(precision);
+		return (new Expression(off.toString(evaluator.eval(command))));
 	}
 
 	public Expression negative() {

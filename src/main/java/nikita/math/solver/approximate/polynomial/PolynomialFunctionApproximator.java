@@ -70,7 +70,6 @@ public class PolynomialFunctionApproximator extends FunctionApproximator impleme
 				coefficients = new ArrayList<>(xSums.subList(i, i + lineCount));
 			}
 			lines.add(getExpression(coefficients));
-			System.out.println(getExpression(coefficients) + " = " + ySums.get(i));
 		}
 
 		List<Variable> vars = new ArrayList<Variable>();
@@ -89,7 +88,6 @@ public class PolynomialFunctionApproximator extends FunctionApproximator impleme
 				throw new FunctionApproximationException(this, "Points most likely do not represent a real function");
 			}
 		}
-		System.out.println(vars);
 		return this.getApproximated(vars, adjustedPrecision);
 	}
 
