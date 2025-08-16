@@ -37,8 +37,8 @@ public class LagrangeFunctionInterpolator extends FunctionInterpolator {
 
 		StringBuilder numBuilder = new StringBuilder();
 		StringBuilder denBuilder = new StringBuilder();
-		String numTemplate = "(x-%s)";
-		String denTemplate = "(" + xn.toPlainString() + "-%s)";
+		String numTemplate = "(x-(%s))";
+		String denTemplate = "(" + xn.toPlainString() + "-(%s))";
 		
 		for (int i = 0; i < points.size(); i++) {
 			if (i == n) {

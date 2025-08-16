@@ -1,15 +1,14 @@
 package nikita;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.matheclipse.core.basic.Config;
 
+import nikita.math.construct.Interval;
 import nikita.math.construct.Precision;
+import nikita.math.construct.expression.Expression;
 import nikita.math.construct.point.Point;
-import nikita.math.solver.interpolate.FunctionInterpolationContext;
-import nikita.math.solver.interpolate.FunctionInterpolator;
+import nikita.math.solver.approximate.differential.DifferentialFunctionApproximator;
 
 public class Main {
 	static {
@@ -19,23 +18,22 @@ public class Main {
 
 	public static void main(String[] args) {
 
-		Precision precision = new Precision("0.000001");
+		Precision precision = new Precision("0.001");
+		Expression differential = new Expression("y+(1+x)y^2");
+		Point initial = new Point(BigDecimal.valueOf(1), BigDecimal.valueOf(-1));
+		Interval interval = new Interval(BigDecimal.valueOf(1), BigDecimal.valueOf(1.5));
+		BigDecimal step = BigDecimal.valueOf(0.1);
 
-		List<Point> points = new ArrayList<>(List.of( //
-				new Point(BigDecimal.valueOf(0.1), BigDecimal.valueOf(1.25)), //
-				new Point(BigDecimal.valueOf(0.2), BigDecimal.valueOf(2.38)), //
-				new Point(BigDecimal.valueOf(0.3), BigDecimal.valueOf(3.79)), //
-				new Point(BigDecimal.valueOf(0.4), BigDecimal.valueOf(5.44)), //
-				new Point(BigDecimal.valueOf(0.5), BigDecimal.valueOf(7.14)) //
-		));
+//		Expression differential = new Expression("x+y");
+//		Point initial = new Point(BigDecimal.valueOf(0), BigDecimal.valueOf(1));
+//		Interval interval = new Interval(BigDecimal.valueOf(0), BigDecimal.valueOf(2));
+//		BigDecimal step = BigDecimal.valueOf(0.1);
 
-		BigDecimal x = BigDecimal.valueOf(0.35);
-		FunctionInterpolationContext context = new FunctionInterpolationContext(x);
-
-		System.out.println(FunctionInterpolator.interpolate(points, precision, "lagrange", context).toBeautifulString());
-		System.out.println(FunctionInterpolator.interpolate(points, precision, "newton", context).toBeautifulString());
-		System.out.println(FunctionInterpolator.interpolate(points, precision, "gauss", context).toBeautifulString());
-		System.out.println(FunctionInterpolator.interpolate(points, precision, "stirling", context).toBeautifulString());
-		System.out.println(FunctionInterpolator.interpolate(points, precision, "bessel", context).toBeautifulString());
+//		System.out.println(DifferentialFunctionApproximator.dSolve(differential, initial, interval, step, "milne", precision)
+//				.getDifferentialApproximated());
+		System.out.println(DifferentialFunctionApproximator.dSolve(differential, initial, interval, step, "deuler", precision)
+				.getActualApproximated());
+		System.out.println(DifferentialFunctionApproximator.dSolve(differential, initial, interval, step, "moddeuler", precision)
+				.getDifferentialApproximated());
 	}
 }

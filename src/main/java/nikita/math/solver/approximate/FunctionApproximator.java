@@ -42,6 +42,11 @@ public abstract class FunctionApproximator {
 		this.shortName = shortName;
 	}
 
+	public FunctionApproximator(String fullName, String loggerName) {
+		this.fullName = fullName;
+		this.loggerName = loggerName;
+	}
+
 	public abstract Expression approximate(List<Point> points, Precision precision);
 
 	public static FunctionApproximation approximate(List<Point> points, Precision precision, String method) {

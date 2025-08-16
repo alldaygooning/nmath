@@ -55,6 +55,7 @@ public class GaussFunctionInterpolator extends FunctionInterpolator {
 
 			List<BigDecimal> step = differences.get(i);
 			BigDecimal difference = step.get(set + shift);
+
 			part = part.multiply(new Expression(difference.toPlainString()), precision);
 
 			interpolated = interpolated.add(part, precision);
@@ -93,7 +94,7 @@ public class GaussFunctionInterpolator extends FunctionInterpolator {
 		return interpolated;
 	}
 
-	private Expression tForward(Expression initial, int order, Precision precision) {
+	public Expression tForward(Expression initial, int order, Precision precision) {
 		Expression result = initial;
 		int delta = 1;
 		for (int i = 2; i < order + 1; i++) {
@@ -107,7 +108,7 @@ public class GaussFunctionInterpolator extends FunctionInterpolator {
 		return result;
 	}
 
-	private Expression tBackward(Expression initial, int order, Precision precision) {
+	public Expression tBackward(Expression initial, int order, Precision precision) {
 		Expression result = initial;
 		int delta = 1;
 		for (int i = 2; i < order + 1; i++) {

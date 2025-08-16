@@ -101,6 +101,65 @@ public class WolframAPI {
 		return new HashSet<>(solutions);
 	}
 
+	public static List<Expression> getDifferentialResult(String jsonString) {
+		JSONObject jsonObject = new JSONObject(jsonString);
+		JSONObject queryResult = jsonObject.getJSONObject("queryresult");
+
+		boolean success = queryResult.getBoolean("success");
+		if (!success) {
+			System.out.println("ERROR: Query not successful");
+			throw new RuntimeException("WolframAlpha query was not successful.");
+		}
+
+		JSONArray pods = queryResult.getJSONArray("pods");
+		String plaintext = null;
+		for (int i = 0; i < pods.length(); i++) {
+			JSONObject pod = pods.getJSONObject(i);
+			if ("Result".equals(pod.getString("id"))) {
+				JSONArray subpods = pod.getJSONArray("subpods");
+				if (subpods.length() > 0) {
+					plaintext = subpods.getJSONObject(0).getString("plaintext");
+					break;
+				}
+			}
+		}
+
+		if (plaintext == null || plaintext.trim().isEmpty()) {
+			System.out.println("ERROR: No plaintext solution found in the JSON.");
+			throw new RuntimeException("No differential solution available in the result.");
+		}
+
+		String trimmed = plaintext.trim();
+		if (trimmed.startsWith("{{") && trimmed.endsWith("}}")) {
+			trimmed = trimmed.substring(2, trimmed.length() - 2);
+		}
+
+		String[] parts = trimmed.split("\\}, \\{");
+
+		Set<Expression> solutions = new HashSet<>();
+		for (String part : parts) {
+			part = part.replace("{", "").replace("}", "").trim();
+
+			String marker = "y[x]->";
+			int markerIndex = part.indexOf(marker);
+			if (markerIndex != -1) {
+				part = part.substring(markerIndex + marker.length()).trim();
+			}
+
+			System.out.println(part);
+			part = part.replace("constant c _1", "c");
+			part = part.replaceAll("[+\\-*/]?\\s*c\\d*", "").trim();
+
+			try {
+				Expression expression = new Expression(part);
+				solutions.add(expression);
+			} catch (Exception e) {
+				System.out.println("ERROR: Cannot convert string to Expression: " + part);
+			}
+		}
+
+		return new ArrayList<Expression>(solutions);
+	}
 
 	public static List<String> getXmlSolutions(String xmlString)
 			throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {

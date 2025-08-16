@@ -1,6 +1,8 @@
 package nikita.math.solver.interpolate;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 
 import nikita.math.construct.Precision;
 import nikita.math.construct.Variable;
@@ -13,13 +15,16 @@ public class FunctionInterpolation {
 	private Precision precision;
 
 	private Point point;
+	Optional<List<List<BigDecimal>>> differences;
 
 	public FunctionInterpolation(Expression interpolated, BigDecimal x, Precision precision) {
 		this.interpolated = interpolated;
-		this.precision = precision;
+		this.setPrecision(precision);
 
 		BigDecimal y = this.interpolated.evaluateAt(new Variable("x", x), precision).toBigDecimal(precision);
-		this.point = new Point(x, y);
+		this.setPoint(new Point(x, y));
+
+		this.differences = Optional.empty();
 	}
 
 	public Expression getInterpolated() {
@@ -31,6 +36,30 @@ public class FunctionInterpolation {
 	}
 
 	public String toBeautifulString() {
-		return String.format("Interpolation Polynomial: %s\nPoint: %s", interpolated.toString(precision), point.toString());
+		return String.format("Interpolation Polynomial: %s\nPoint: %s", interpolated.toString(getPrecision()), getPoint().toString());
+	}
+
+	public Precision getPrecision() {
+		return precision;
+	}
+
+	public void setPrecision(Precision precision) {
+		this.precision = precision;
+	}
+
+	public Point getPoint() {
+		return point;
+	}
+
+	public void setPoint(Point point) {
+		this.point = point;
+	}
+
+	public void setDifferences(List<List<BigDecimal>> differences) {
+		this.differences = Optional.of(differences);
+	}
+
+	public Optional<List<List<BigDecimal>>> getDifferences() {
+		return differences;
 	}
 }

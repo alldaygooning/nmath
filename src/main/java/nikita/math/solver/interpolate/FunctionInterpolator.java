@@ -59,7 +59,8 @@ public abstract class FunctionInterpolator {
 		}
 
 		if (this.minPointsRequired > points.size()) {
-			throw new FunctionInterpolationException(this, String.format("Method requires at least %s points", this.minPointsRequired));
+			throw new FunctionInterpolationException(this,
+					String.format("Method requires at least unique %s points", this.minPointsRequired));
 		}
 
 		if (this.requiresUniformity && !isUniform(points, precision)) {
@@ -72,12 +73,16 @@ public abstract class FunctionInterpolator {
 		FunctionInterpolator interpolator = getInterpolator(method);
 		points = sort(points);
 		interpolator.check(points, context.getX(), precision);
+		System.out.println(points);
 
 		logSeparator();
 		NLogger.info(String.format("Interpolation Function using '%s' for the following data:\n%s", interpolator.getFullName(),
 				getTableString(points)));
 		Expression interpolated = interpolator.interpolate(points, precision, context);
 		FunctionInterpolation interpolation = new FunctionInterpolation(interpolated, context.getX(), precision);
+		if (!(interpolator instanceof LagrangeFunctionInterpolator) && !(interpolator instanceof NewtonFunctionInterpolator)) {
+			interpolation.setDifferences(NewtonFunctionInterpolator.getFiniteDifferences(points, precision));
+		}
 		interpolator.info(String.format("Final Interpolation: %s", interpolation.toBeautifulString()));
 		logSeparator();
 		return interpolation;
@@ -128,7 +133,7 @@ public abstract class FunctionInterpolator {
 			for (int i = 1; i < points.size(); i++) {
 				Point previous = uniquePoints.get(uniquePoints.size() - 1);
 				Point current = points.get(i);
-				if (previous.getX().compareTo(current.getX()) != 0 || previous.getY().compareTo(current.getY()) != 0) {
+				if (previous.getX().compareTo(current.getX()) != 0) {
 					uniquePoints.add(current);
 				}
 			}
